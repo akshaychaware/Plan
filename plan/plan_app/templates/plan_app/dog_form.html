@@ -1,0 +1,18 @@
+{% extends 'plan_app/base.html' %}
+{% block title %}{{ dog|yesno:"Edit dog,Add dog" }} · Training Tracker{% endblock %}
+{% block content %}
+<div class="narrow stack">
+  <div>
+    <h1>{% if dog %}Edit {{ dog.name|capfirst }}{% else %}Add a dog{% endif %}</h1>
+    <p class="muted m-0">{% if dog %}Update the profile details.{% else %}You’ll set up the training plan next.{% endif %}</p>
+  </div>
+  <form method="post" class="card form-stack">
+    {% csrf_token %}
+    {{ form }}
+    <div class="form-actions">
+      <button class="btn">{% if dog %}Save changes{% else %}Save and continue{% endif %}</button>
+      <a class="btn btn-secondary" href="{% if dog %}{% url 'plan_app:dog_detail' dog.pk %}{% else %}{% url 'plan_app:dog_list' %}{% endif %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

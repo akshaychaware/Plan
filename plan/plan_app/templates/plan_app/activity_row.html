@@ -1,0 +1,23 @@
+{% firstof a.planned.exercise_type.name a.session.exercise_type.name as name %}
+<div class="activity-row act-{{ name|slugify }}">
+  <span class="dot"></span>
+  <div class="activity-main">
+    <strong>{% if a.planned %}{{ a.planned.summary }}{% else %}{{ a.session.actual_summary }} <small class="muted">(extra)</small>{% endif %}</strong>
+    {% if a.planned.notes %}<span class="muted">{{ a.planned.notes }}</span>{% endif %}
+    {% if a.planned and a.session %}<span class="muted">Actual: {{ a.session.actual_summary }}</span>{% endif %}
+  </div>
+  {% include 'plan_app/status_badge.html' with status=a.status label=a.status_label day=day %}
+  <div class="activity-actions">
+    {% if a.planned and not a.session and day == today %}
+      <form method="post" action="{% url 'plan_app:session_quick_log' dog.pk a.planned.pk %}">
+        {% csrf_token %}
+        <button class="btn btn-success btn-sm" title="Log as completed with planned values">{% include 'plan_app/icon.html' with name='check' %} Done</button>
+      </form>
+    {% endif %}
+    {% if a.session %}
+      <a class="btn btn-secondary btn-sm" href="{% url 'plan_app:session_edit' dog.pk a.session.pk %}">Edit</a>
+    {% elif day <= today %}
+      <a class="btn btn-secondary btn-sm" href="{% url 'plan_app:session_record' dog.pk %}?date={{ day|date:'Y-m-d' }}&activity={{ a.planned.pk }}">Record</a>
+    {% endif %}
+  </div>
+</div>

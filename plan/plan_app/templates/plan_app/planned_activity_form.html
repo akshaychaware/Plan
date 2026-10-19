@@ -1,0 +1,27 @@
+<div class="activity-form" data-duration-scope>
+  {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+  {{ form.non_field_errors }}
+  <div class="activity-grid">
+    <div class="span-2">
+      <label for="{{ form.exercise_type.id_for_label }}">Activity</label>
+      {{ form.exercise_type.errors }}{{ form.exercise_type }}
+    </div>
+    <div>
+      <label for="{{ form.planned_duration_minutes.id_for_label }}">Minutes</label>
+      {{ form.planned_duration_minutes.errors }}{{ form.planned_duration_minutes }}
+    </div>
+    <div>
+      <label for="{{ form.planned_distance_km.id_for_label }}">Km</label>
+      {{ form.planned_distance_km.errors }}{{ form.planned_distance_km }}
+    </div>
+    <div>
+      <label for="{{ form.planned_repetitions.id_for_label }}">Reps</label>
+      {{ form.planned_repetitions.errors }}{{ form.planned_repetitions }}
+    </div>
+    <div class="span-notes">
+      <label for="{{ form.notes.id_for_label }}">Notes</label>
+      {{ form.notes.errors }}{{ form.notes }}
+    </div>
+    <label class="remove-toggle" title="Remove this activity">{{ form.DELETE }}<span>Remove</span></label>
+  </div>
+</div>

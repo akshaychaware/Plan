@@ -1,0 +1,60 @@
+{% extends 'plan_app/base.html' %}
+{% block title %}Training session · {{ dog.name }}{% endblock %}
+{% block content %}
+<div>
+  <h1>{{ session.pk|yesno:"Edit,Record" }} session</h1>
+  <p class="muted m-0">{{ dog.name|capfirst }} · {{ day|date:"l, j F Y" }}</p>
+</div>
+
+{% include 'plan_app/dog_tabs.html' %}
+
+<nav class="chips" aria-label="Activities on {{ day|date:'j F' }}">
+  {% for a in entry.activities %}
+    {% firstof a.planned.exercise_type.name a.session.exercise_type.name as name %}
+    {% if a.planned %}
+      <a class="chip act-{{ name|slugify }}" href="{% url 'plan_app:session_record' dog.pk %}?date={{ day|date:'Y-m-d' }}&activity={{ a.planned.pk }}"{% if a.planned.pk == session.planned_activity_id %} aria-current="true"{% endif %}>
+    {% else %}
+      <a class="chip act-{{ name|slugify }}" href="{% url 'plan_app:session_edit' dog.pk a.session.pk %}"{% if a.session.pk == session.pk %} aria-current="true"{% endif %}>
+    {% endif %}
+        <span class="dot"></span>{{ name }}<span class="mini-status status-{{ a.status|lower }}" title="{{ a.status_label }}"></span>
+      </a>
+  {% endfor %}
+  <a class="chip" href="{% url 'plan_app:session_record' dog.pk %}?date={{ day|date:'Y-m-d' }}&activity=extra"{% if not session.pk and not session.planned_activity_id %} aria-current="true"{% endif %}>
+    {% include 'plan_app/icon.html' with name='plus' %} Extra activity
+  </a>
+</nav>
+
+<div class="grid grid-2">
+  <form method="post" class="card" data-duration-scope>
+    {% csrf_token %}
+    <div class="form-grid">{{ form }}</div>
+    <div class="form-actions">
+      <button class="btn">{% include 'plan_app/icon.html' with name='check' %} Save session</button>
+      <a class="btn btn-secondary" href="{% url 'plan_app:dog_detail' dog.pk %}">Cancel</a>
+    </div>
+  </form>
+
+  <aside class="stack">
+    <div class="card">
+      <div class="card-header"><h2>Planned</h2></div>
+      <div class="today-activity act-{{ session.planned_exercise_type.name|slugify }} m-0">
+        <span class="dot"></span>
+        <div>
+          <strong>{{ session.planned_summary }}</strong>
+          {% if session.planned_activity.notes %}<span class="muted">{{ session.planned_activity.notes }}</span>{% endif %}
+          {% if not session.planned_exercise_type_id %}<span class="muted">An extra activity outside the plan.</span>{% endif %}
+        </div>
+      </div>
+    </div>
+    {% if not session.pk %}
+      <form method="get" class="card form-stack">
+        <div>
+          <label for="date">Choose another date</label>
+          <input type="date" id="date" name="date" value="{{ day|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}">
+        </div>
+        <div class="form-actions"><button class="btn btn-secondary btn-block">{% include 'plan_app/icon.html' with name='calendar' %} Go to date</button></div>
+      </form>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

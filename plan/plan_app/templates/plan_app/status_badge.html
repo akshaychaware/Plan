@@ -1,0 +1,1 @@
+{% if status == 'PLANNED' %}{% if day > today %}<span class="badge">Upcoming</span>{% elif day == today %}<span class="badge badge-today">Planned</span>{% else %}<span class="badge badge-missed">Not recorded</span>{% endif %}{% else %}<span class="badge badge-{{ status|lower }}">{{ label }}</span>{% endif %}

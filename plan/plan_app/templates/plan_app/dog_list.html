@@ -1,0 +1,31 @@
+{% extends 'plan_app/base.html' %}
+{% block content %}
+<div class="row spread">
+  <div>
+    <h1>Your dogs</h1>
+    <p class="muted m-0">Pick a dog to see today’s training, the week and progress.</p>
+  </div>
+  <a class="btn" href="{% url 'plan_app:dog_create' %}">{% include 'plan_app/icon.html' with name='plus' %} Add dog</a>
+</div>
+
+{% if dogs %}
+  <div class="grid cards-grid">
+    {% for dog in dogs %}
+      <a class="card card-interactive row" href="{% url 'plan_app:dog_detail' dog.pk %}">
+        <span class="avatar avatar-soft">{{ dog.name|first }}</span>
+        <span>
+          <strong>{{ dog.name|capfirst }}</strong><br>
+          <span class="muted">{{ dog.breed }}</span>
+        </span>
+      </a>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="card empty">
+    <span class="brand-mark">{% include 'plan_app/icon.html' with name='paw' %}</span>
+    <h2>No dogs yet</h2>
+    <p>Add your first dog to start planning training.</p>
+    <a class="btn" href="{% url 'plan_app:dog_create' %}">Add your first dog</a>
+  </div>
+{% endif %}
+{% endblock %}

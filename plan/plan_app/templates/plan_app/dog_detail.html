@@ -1,0 +1,147 @@
+{% extends 'plan_app/base.html' %}
+{% block title %}{{ dog.name }} · Training Tracker{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="row spread">
+    <div class="row">
+      <span class="avatar">{{ dog.name|first }}</span>
+      <div>
+        <h1>{{ dog.name|capfirst }}</h1>
+        <p class="muted m-0">
+          {{ dog.breed }}{% if dog.date_of_birth %} · {{ dog.date_of_birth|timesince:today }} old{% endif %}{% if dog.weight_kg %} · {{ dog.weight_kg|floatformat:"-3" }} kg{% endif %}
+        </p>
+      </div>
+    </div>
+    <div class="row">
+      <a class="btn btn-secondary" href="{% url 'plan_app:session_record' dog.pk %}">
+        {% include 'plan_app/icon.html' with name='plus' %} Record session
+      </a>
+      <a class="btn btn-ghost hero-ghost" href="{% url 'plan_app:dog_edit' dog.pk %}">Edit profile</a>
+    </div>
+  </div>
+  <div class="hero-pills">
+    <span class="hero-pill">{% include 'plan_app/icon.html' with name='flame' %} {{ stats.streak }}-day streak</span>
+    <span class="hero-pill">{% include 'plan_app/icon.html' with name='check' %} {{ progress.done }}/{{ progress.target }} training activities this week</span>
+    {% if plan %}<span class="hero-pill">{% include 'plan_app/icon.html' with name='calendar' %} {{ plan.name }} · since {{ plan.start_date|date:"j M" }}</span>{% endif %}
+  </div>
+</section>
+
+{% include 'plan_app/dog_tabs.html' %}
+
+<div class="grid grid-2">
+  <section class="card">
+    <div class="card-header">
+      <h2>Today’s training</h2>
+      <span class="muted">{{ today|date:"l, j F" }}</span>
+    </div>
+    <div class="activity-list">
+      {% for a in today_entry.activities %}
+        {% include 'plan_app/activity_row.html' with day=today %}
+      {% empty %}
+        <p class="muted m-0">
+          No training planned today.
+          {% if not plan %}<a href="{% url 'plan_app:plan_edit' dog.pk %}">Create a training plan</a>.{% endif %}
+        </p>
+      {% endfor %}
+    </div>
+    <a class="add-link" href="{% url 'plan_app:session_record' dog.pk %}?date={{ today|date:'Y-m-d' }}&activity=extra">
+      {% include 'plan_app/icon.html' with name='plus' %} Add an extra activity
+    </a>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h2>Weekly progress</h2></div>
+    <div class="progress-wrap">
+      <div class="ring" style="--value: {{ progress.percent }}" role="img" aria-label="{{ progress.percent }}% of training activities done">
+        <span>{{ progress.percent }}%</span>
+      </div>
+      <div>
+        <p class="mt-0"><strong>{{ progress.done }} of {{ progress.target }}</strong> planned training activities done.</p>
+        <p class="muted m-0">Rest is not counted. Keep the streak going!</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<section class="card">
+  <div class="card-header">
+    <h2>This week</h2>
+    <a href="{% url 'plan_app:plan_edit' dog.pk %}">Edit plan</a>
+  </div>
+  <div class="week">
+    {% for entry in week %}
+      {% with first=entry.activities.0 %}
+      {% firstof first.planned.exercise_type.name first.session.exercise_type.name as lead %}
+      {% if entry.date <= today %}
+        <a class="day act-{{ lead|slugify }}{% if entry.date == today %} is-today{% endif %}"
+           href="{% url 'plan_app:session_record' dog.pk %}?date={{ entry.date|date:'Y-m-d' }}">
+      {% else %}
+        <div class="day act-{{ lead|slugify }}">
+      {% endif %}
+          <span class="day-name">{{ entry.date|date:"D" }}</span>
+          <span class="day-date">{{ entry.date|date:"j" }}</span>
+          <ul class="day-activities">
+            {% for a in entry.activities %}
+              {% firstof a.planned.exercise_type.name a.session.exercise_type.name as name %}
+              <li class="act-{{ name|slugify }}">
+                <span class="dot"></span>
+                <span>{% if a.planned %}{{ a.planned.summary }}{% else %}{{ a.session.actual_summary }}{% endif %}</span>
+                <span class="mini-status status-{{ a.status|lower }}{% if a.status == 'PLANNED' and entry.date < today %} status-missed{% endif %}" title="{{ a.status_label }}"></span>
+              </li>
+            {% empty %}
+              <li class="muted">No plan</li>
+            {% endfor %}
+          </ul>
+      {% if entry.date <= today %}</a>{% else %}</div>{% endif %}
+      {% endwith %}
+    {% endfor %}
+  </div>
+  <p class="legend muted">
+    <span class="mini-status status-completed"></span> Completed
+    <span class="mini-status status-partially_completed"></span> Partial
+    <span class="mini-status status-skipped"></span> Skipped
+    <span class="mini-status status-planned"></span> Planned
+  </p>
+</section>
+
+<section class="card">
+  <div class="card-header">
+    <h2>Statistics</h2>
+    <nav class="segmented" aria-label="Statistics period">
+      {% for key, label in periods.items %}
+        <a href="?period={{ key }}"{% if key == period %} aria-current="true"{% endif %}>{{ label }}</a>
+      {% endfor %}
+    </nav>
+  </div>
+  <div class="stats">
+    <div class="stat tone-primary"><span class="stat-value">{{ stats.training_days }}</span><span class="stat-label">Training days</span></div>
+    <div class="stat"><span class="stat-value">{{ stats.rest_days }}</span><span class="stat-label">Rest days</span></div>
+    <div class="stat tone-success"><span class="stat-value">{{ stats.completed }}</span><span class="stat-label">Completed</span></div>
+    <div class="stat tone-warning"><span class="stat-value">{{ stats.partially_completed }}</span><span class="stat-label">Partial</span></div>
+    <div class="stat tone-danger"><span class="stat-value">{{ stats.skipped }}</span><span class="stat-label">Skipped</span></div>
+    <div class="stat tone-primary"><span class="stat-value">{{ stats.completion_rate }}%</span><span class="stat-label">Completion</span></div>
+    <div class="stat tone-accent"><span class="stat-value">{{ stats.total_minutes|default:0 }}</span><span class="stat-label">Minutes</span></div>
+    <div class="stat tone-accent"><span class="stat-value">{{ stats.total_distance_km|default:0|floatformat:"-2" }}</span><span class="stat-label">Kilometres</span></div>
+  </div>
+  {% if stats.by_exercise %}
+    <h2 class="section-title">Activity breakdown</h2>
+    <div class="bars">
+      {% for row in stats.by_exercise %}
+        <div class="act-{{ row.exercise|slugify }}">
+          <div class="bar-label">
+            <span class="inline-dot"><span class="dot"></span><strong>{{ row.exercise }}</strong></span>
+            <span class="muted">
+              {{ row.sessions }} session{{ row.sessions|pluralize }}
+              {% if row.total_minutes %} · {{ row.total_minutes }} min (avg {{ row.average_minutes|floatformat:"-1" }}){% endif %}
+              {% if row.total_distance_km %} · {{ row.total_distance_km|floatformat:"-2" }} km{% endif %}
+            </span>
+          </div>
+          <div class="bar"><span style="width: {{ row.share }}%"></span></div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted">No sessions recorded for this period yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#4f46e5">
+  <title>{% block title %}Training Tracker{% endblock %}</title>
+  <link rel="manifest" href="{% static 'plan_app/manifest.json' %}">
+  <link rel="icon" type="image/png" href="{% static 'plan_app/icons/icon-192.png' %}">
+  <link rel="apple-touch-icon" href="{% static 'plan_app/icons/icon-192.png' %}">
+  <script src="{% static 'plan_app/theme.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'plan_app/style.css' %}">
+  <script src="{% static 'plan_app/app.js' %}" defer></script>
+</head>
+<body data-service-worker="{% url 'plan_app:service_worker' %}"{% if not dog.pk %} class="no-tabbar"{% endif %}>
+  <header class="topbar">
+    <div class="container">
+      <a class="brand" href="{% url 'plan_app:dog_list' %}">
+        <span class="brand-mark">{% include 'plan_app/icon.html' with name='paw' %}</span>
+        Training Tracker
+      </a>
+      <div class="topbar-actions">
+        <button type="button" class="btn btn-ghost btn-icon" data-theme-toggle aria-label="Toggle dark mode">
+          {% include 'plan_app/icon.html' with name='moon' %}
+        </button>
+        {% if user.is_authenticated %}
+          <span class="user-chip"><span class="user-name">{{ user.get_username }}</span></span>
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button class="btn btn-ghost btn-icon" aria-label="Log out" title="Log out">
+              {% include 'plan_app/icon.html' with name='logout' %}
+            </button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  {% if messages %}
+    <div class="toasts" role="status" aria-live="polite">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+          <p>{{ message }}</p>
+          <button type="button" aria-label="Dismiss">&times;</button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <main class="container stack reveal">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

@@ -1,0 +1,57 @@
+{% extends 'plan_app/base.html' %}
+{% block title %}History · {{ dog.name }}{% endblock %}
+{% block content %}
+<div>
+  <h1>Training history</h1>
+  <p class="muted m-0">Every recorded session for {{ dog.name|capfirst }}, planned vs actual, exactly as it was at the time.</p>
+</div>
+
+{% include 'plan_app/dog_tabs.html' %}
+
+<nav class="segmented" aria-label="Filter by status">
+  <a href="?"{% if not status %} aria-current="true"{% endif %}>All</a>
+  {% for value, label in statuses %}
+    <a href="?status={{ value }}"{% if value == status %} aria-current="true"{% endif %}>{{ label }}</a>
+  {% endfor %}
+</nav>
+
+<div class="card">
+  {% if page %}
+    <div class="table-wrap">
+      <table class="table-responsive">
+        <thead><tr><th>Date</th><th>Planned</th><th>Actual</th><th>Status</th><th>Notes</th><th></th></tr></thead>
+        <tbody>
+          {% for session in page %}
+            <tr>
+              <th scope="row">{{ session.date|date:"D, j M Y" }}</th>
+              <td data-label="Planned">{{ session.planned_summary }}</td>
+              <td data-label="Actual">
+                <span class="inline-dot act-{{ session.exercise_type.name|slugify }}"><span class="dot"></span>{{ session.actual_summary }}</span>
+              </td>
+              <td data-label="Status"><span class="badge badge-{{ session.status|lower }}">{{ session.get_status_display }}</span></td>
+              <td data-label="Notes" class="span-full">{{ session.notes|linebreaksbr|default:"—" }}</td>
+              <td class="span-full">
+                <a class="btn btn-secondary btn-sm" href="{% url 'plan_app:session_edit' dog.pk session.pk %}">Edit</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if page.has_other_pages %}
+      <nav class="pagination">
+        {% if page.has_previous %}<a class="btn btn-secondary" href="?status={{ status }}&page={{ page.previous_page_number }}">Previous</a>{% endif %}
+        <span class="muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+        {% if page.has_next %}<a class="btn btn-secondary" href="?status={{ status }}&page={{ page.next_page_number }}">Next</a>{% endif %}
+      </nav>
+    {% endif %}
+  {% else %}
+    <div class="empty">
+      <span class="brand-mark">{% include 'plan_app/icon.html' with name='list' %}</span>
+      <h2>No sessions yet</h2>
+      <p>Record a session and it will show up here.</p>
+      <a class="btn" href="{% url 'plan_app:session_record' dog.pk %}">Record session</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

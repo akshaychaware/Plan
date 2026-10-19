@@ -1,0 +1,63 @@
+{% extends 'plan_app/base.html' %}
+{% block title %}Training plan · {{ dog.name }}{% endblock %}
+{% block content %}
+<div>
+  <h1>Training plan</h1>
+  <p class="muted m-0">
+    Plan any number of activities per day for {{ dog.name|capfirst }}. Changing the plan never alters recorded sessions.
+  </p>
+</div>
+
+{% include 'plan_app/dog_tabs.html' %}
+
+<form method="post" class="stack">
+  {% csrf_token %}
+  <section class="card">
+    <div class="card-header">
+      <h2>{% if plan.pk %}Active plan{% else %}New plan{% endif %}</h2>
+      {% if plan.pk %}<span class="badge badge-completed">Active</span>{% endif %}
+    </div>
+    <div class="form-grid form-grid-3">{{ plan_form }}</div>
+  </section>
+
+  <div class="plan-days">
+    {% for formset in formsets %}
+      <section class="card plan-day">
+        <div class="card-header">
+          <h2>{{ formset.instance.get_day_of_week_display }}</h2>
+          <button type="button" class="btn btn-secondary btn-sm" data-add-activity="{{ formset.prefix }}">
+            {% include 'plan_app/icon.html' with name='plus' %} Add activity
+          </button>
+        </div>
+        {{ formset.management_form }}
+        {{ formset.non_form_errors }}
+        <div class="activity-forms" id="{{ formset.prefix }}-forms">
+          {% for form in formset.forms %}{% include 'plan_app/planned_activity_form.html' %}{% endfor %}
+        </div>
+        <p class="muted empty-hint">Nothing planned. Add an activity (use “Rest” for planned recovery).</p>
+        <template id="{{ formset.prefix }}-template">{% include 'plan_app/planned_activity_form.html' with form=formset.empty_form %}</template>
+      </section>
+    {% endfor %}
+  </div>
+
+  <div class="form-actions">
+    <button class="btn">{% include 'plan_app/icon.html' with name='check' %} Save plan</button>
+    <a class="btn btn-secondary" href="{% url 'plan_app:dog_detail' dog.pk %}">Cancel</a>
+  </div>
+</form>
+
+{% if plan.pk %}
+  <form method="post" action="{% url 'plan_app:plan_new' dog.pk %}" class="card">
+    {% csrf_token %}
+    <div class="card-header">
+      <h2>Start a new plan version</h2>
+    </div>
+    <p class="muted mt-0">
+      Copies the current week into a new plan starting on the chosen date and ends the current plan the day before.
+      Use this when the routine changes for a new period.
+    </p>
+    <div class="form-grid">{{ new_plan_form }}</div>
+    <div class="form-actions"><button class="btn btn-secondary">Start new version</button></div>
+  </form>
+{% endif %}
+{% endblock %}

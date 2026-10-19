@@ -1,0 +1,16 @@
+{% with current=request.resolver_match.url_name %}
+<nav class="tabs" aria-label="{{ dog.name }} sections">
+  <a class="tab" href="{% url 'plan_app:dog_detail' dog.pk %}"{% if current == 'dog_detail' %} aria-current="page"{% endif %}>
+    {% include 'plan_app/icon.html' with name='home' %}<span>Dashboard</span>
+  </a>
+  <a class="tab" href="{% url 'plan_app:session_record' dog.pk %}"{% if current == 'session_record' %} aria-current="page"{% endif %}>
+    {% include 'plan_app/icon.html' with name='plus' %}<span>Record</span>
+  </a>
+  <a class="tab" href="{% url 'plan_app:plan_edit' dog.pk %}"{% if current == 'plan_edit' %} aria-current="page"{% endif %}>
+    {% include 'plan_app/icon.html' with name='calendar' %}<span>Plan</span>
+  </a>
+  <a class="tab" href="{% url 'plan_app:session_history' dog.pk %}"{% if current == 'session_history' %} aria-current="page"{% endif %}>
+    {% include 'plan_app/icon.html' with name='list' %}<span>History</span>
+  </a>
+</nav>
+{% endwith %}
