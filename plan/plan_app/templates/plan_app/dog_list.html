@@ -11,12 +11,13 @@
 {% if dogs %}
   <div class="grid cards-grid">
     {% for dog in dogs %}
-      <a class="card card-interactive row" href="{% url 'plan_app:dog_detail' dog.pk %}">
+      <a class="card card-interactive dog-card" href="{% url 'plan_app:dog_detail' dog.pk %}">
         <span class="avatar avatar-soft">{{ dog.name|first }}</span>
-        <span>
-          <strong>{{ dog.name|capfirst }}</strong><br>
+        <span class="dog-card-body">
+          <strong>{{ dog.name|capfirst }}</strong>
           <span class="muted">{{ dog.breed }}</span>
         </span>
+        <span class="dog-card-arrow">{% include 'plan_app/icon.html' with name='arrow-right' %}</span>
       </a>
     {% endfor %}
   </div>

@@ -8,9 +8,12 @@
   <link rel="manifest" href="{% static 'plan_app/manifest.json' %}">
   <link rel="icon" type="image/png" href="{% static 'plan_app/icons/icon-192.png' %}">
   <link rel="apple-touch-icon" href="{% static 'plan_app/icons/icon-192.png' %}">
-  <script src="{% static 'plan_app/theme.js' %}"></script>
-  <link rel="stylesheet" href="{% static 'plan_app/style.css' %}">
-  <script src="{% static 'plan_app/app.js' %}" defer></script>
+  <script src="{% static 'plan_app/theme.js' %}?v={{ asset_version }}"></script>
+  <link rel="stylesheet" href="{% static 'plan_app/style.css' %}?v={{ asset_version }}">
+  <script src="{% static 'plan_app/app.js' %}?v={{ asset_version }}" defer></script>
+  <script type="speculationrules">
+    {"prefetch": [{"where": {"and": [{"href_matches": "/*"}, {"not": {"href_matches": ["/admin/*", "/api/*", "/accounts/*", "/sw.js"]}}]}, "eagerness": "moderate"}]}
+  </script>
 </head>
 <body data-service-worker="{% url 'plan_app:service_worker' %}"{% if not dog.pk %} class="no-tabbar"{% endif %}>
   <header class="topbar">

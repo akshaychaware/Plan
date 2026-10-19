@@ -48,6 +48,7 @@ class WebTests(TrackerTestCase):
         self.assertContains(response, 'Walking — 1 km')
         self.assertEqual(response.context['stats']['period'], 'month')
         self.assertContains(response, 'Monthly progress')
+        self.assertContains(response, f'class="back-link" href="{reverse("plan_app:dog_list")}"')
         self.assertIn(response.context['month_progress']['target'], (8, 10))
 
     def test_record_flow_walks_through_each_planned_activity(self):

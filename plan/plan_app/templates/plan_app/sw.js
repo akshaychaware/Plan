@@ -32,15 +32,18 @@ self.addEventListener('fetch', (event) => {
 
   if (ASSETS.includes(url.pathname)) {
     event.respondWith(
-      fetch(request)
+      fetch(request, { cache: 'no-cache' })
         .then((response) => {
           if (response.ok) {
             const copy = response.clone();
-            caches.open(CACHE).then((cache) => cache.put(request, copy));
+            caches.open(CACHE).then(async (cache) => {
+              await cache.delete(request, { ignoreSearch: true });
+              await cache.put(request, copy);
+            });
           }
           return response;
         })
-        .catch(() => caches.match(request))
+        .catch(() => caches.match(request, { ignoreSearch: true }))
     );
   }
 });
