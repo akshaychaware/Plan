@@ -93,5 +93,5 @@ class WebTests(TrackerTestCase):
         self.client.logout()
         response = self.client.get(reverse('plan_app:service_worker'))
         self.assertEqual(response['Content-Type'], 'application/javascript')
-        self.assertContains(response, 'training-tracker-v1')
+        self.assertContains(response, 'training-tracker-v2')
         self.assertEqual(self.client.get(reverse('plan_app:offline')).status_code, 200)

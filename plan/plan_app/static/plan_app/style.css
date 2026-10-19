@@ -375,6 +375,25 @@ td input, td select { min-width: 120px; }
 .auth { min-height: calc(100vh - var(--nav-h) - 6rem); display: grid; place-items: center; }
 .auth .card { width: min(420px, 100%); box-shadow: var(--shadow); }
 
+/* ---------- Dark theme: orange hover/focus for interactive elements ---------- */
+[data-theme="dark"] { --hover: #f97316; --hover-soft: rgb(249 115 22 / .16); }
+[data-theme="dark"] :focus-visible { outline-color: rgb(249 115 22 / .7); }
+[data-theme="dark"] a:not(.btn, .tab, .day, .chip, .card-interactive):hover { color: var(--hover); }
+[data-theme="dark"] .btn:hover {
+  --btn-bg: var(--hover); --btn-color: #0b1020;
+  border-color: var(--hover); box-shadow: 0 20px 40px -12px rgb(249 115 22 / .45);
+}
+[data-theme="dark"] .btn-ghost:hover { --btn-color: var(--hover); background: var(--hover-soft); border-color: transparent; box-shadow: none; }
+[data-theme="dark"] .hero-ghost:hover { --btn-color: #0b1020; background: var(--hover); }
+[data-theme="dark"] .tab:not([aria-current="page"]):hover,
+[data-theme="dark"] .segmented a:hover { color: var(--hover); background: var(--hover-soft); }
+[data-theme="dark"] .chip:hover,
+[data-theme="dark"] label:has(> input[type="radio"]):hover { color: var(--hover); border-color: var(--hover); }
+[data-theme="dark"] .card-interactive:hover,
+[data-theme="dark"] a.day:hover { border-color: var(--hover); box-shadow: 0 0 0 3px var(--hover-soft), var(--shadow); }
+[data-theme="dark"] :is(input, select, textarea):hover { border-color: var(--hover); }
+[data-theme="dark"] .remove-toggle:hover { color: var(--hover); }
+
 /* ---------- Motion ---------- */
 .reveal > * { animation: fade-up .6s var(--ease) both; }
 .reveal > *:nth-child(2) { animation-delay: .06s; }

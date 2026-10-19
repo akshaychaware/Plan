@@ -1,4 +1,4 @@
-{% load static %}const CACHE = 'training-tracker-v1';
+{% load static %}const CACHE = 'training-tracker-v2';
 const OFFLINE_URL = '{% url "plan_app:offline" %}';
 const ASSETS = [
   OFFLINE_URL,
@@ -31,15 +31,16 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (ASSETS.includes(url.pathname)) {
-    event.respondWith(caches.open(CACHE).then(async (cache) => {
-      const cached = await cache.match(request);
-      const network = fetch(request)
+    event.respondWith(
+      fetch(request)
         .then((response) => {
-          if (response.ok) cache.put(request, response.clone());
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE).then((cache) => cache.put(request, copy));
+          }
           return response;
         })
-        .catch(() => cached);
-      return cached || network;
-    }));
+        .catch(() => caches.match(request))
+    );
   }
 });
