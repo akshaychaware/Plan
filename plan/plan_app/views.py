@@ -53,6 +53,7 @@ def dog_detail(request, pk):
         'today_entry': week[today.weekday()],
         'week': week,
         'progress': week_progress(week),
+        'month_progress': week_progress(session_services.month_overview(dog, today)),
         'stats': summarize(dog, period, today),
         'period': period,
         'periods': PERIODS,

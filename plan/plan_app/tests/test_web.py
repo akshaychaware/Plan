@@ -28,6 +28,8 @@ class WebTests(TrackerTestCase):
         self.assertContains(response, 'Swimming — 20 min')
         self.assertContains(response, 'Walking — 1 km')
         self.assertEqual(response.context['stats']['period'], 'month')
+        self.assertContains(response, 'Monthly progress')
+        self.assertIn(response.context['month_progress']['target'], (8, 10))
 
     def test_record_flow_walks_through_each_planned_activity(self):
         self.assertEqual(self.client.get(self.record_url(self.today)).context['session'].planned_activity, self.swim)

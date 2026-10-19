@@ -49,18 +49,10 @@
     </a>
   </section>
 
-  <section class="card">
-    <div class="card-header"><h2>Weekly progress</h2></div>
-    <div class="progress-wrap">
-      <div class="ring" style="--value: {{ progress.percent }}" role="img" aria-label="{{ progress.percent }}% of training activities done">
-        <span>{{ progress.percent }}%</span>
-      </div>
-      <div>
-        <p class="mt-0"><strong>{{ progress.done }} of {{ progress.target }}</strong> planned training activities done.</p>
-        <p class="muted m-0">Rest is not counted. Keep the streak going!</p>
-      </div>
-    </div>
-  </section>
+  <div class="stack">
+    {% include 'plan_app/progress_card.html' with title='Weekly progress' %}
+    {% include 'plan_app/progress_card.html' with title='Monthly progress' progress=month_progress %}
+  </div>
 </div>
 
 <section class="card">

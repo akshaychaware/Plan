@@ -33,13 +33,22 @@ def day_entries(dog, day, sessions=None):
     return {'date': day, 'activities': activities}
 
 
-def week_overview(dog, day):
-    monday = day - timedelta(days=day.weekday())
-    days = [monday + timedelta(days=offset) for offset in range(7)]
+def overview(dog, start, end):
+    days = [start + timedelta(days=offset) for offset in range((end - start).days + 1)]
     sessions = list(
-        dog.sessions.select_related('exercise_type', 'planned_exercise_type').filter(date__range=(days[0], days[-1]))
+        dog.sessions.select_related('exercise_type', 'planned_exercise_type').filter(date__range=(start, end))
     )
     return [day_entries(dog, d, [s for s in sessions if s.date == d]) for d in days]
+
+
+def week_overview(dog, day):
+    monday = day - timedelta(days=day.weekday())
+    return overview(dog, monday, monday + timedelta(days=6))
+
+
+def month_overview(dog, day):
+    first = day.replace(day=1)
+    return overview(dog, first, (first + timedelta(days=32)).replace(day=1) - timedelta(days=1))
 
 
 @transaction.atomic
