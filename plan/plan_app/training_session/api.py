@@ -27,7 +27,7 @@ class TrainingSessionViewSet(
 
     def get_queryset(self):
         params = self.request.query_params
-        sessions = TrainingSession.objects.filter(dog__owner=self.request.user).select_related(
+        sessions = TrainingSession.objects.select_related(
             'exercise_type', 'planned_exercise_type'
         )
         if params.get('dog', '').isdigit():

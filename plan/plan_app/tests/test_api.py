@@ -13,17 +13,25 @@ class ApiTests(TrackerTestCase):
     def test_authentication_required(self):
         self.assertEqual(APIClient().get('/api/dogs').status_code, 403)
 
-    def test_dogs_are_scoped_to_owner_and_camel_cased(self):
+    def test_dogs_are_shared_and_camel_cased(self):
         response = self.api.post('/api/dogs', {'name': 'Aayesha', 'weightKg': '28.125'}, format='json')
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.json()['weightKg'], '28.125')
         self.assertTrue(Dog.objects.filter(name='Aayesha', owner=self.user).exists())
-        other_dog = Dog.objects.create(owner=self.other_user, name='Rex')
-        self.assertEqual(self.api.get(f'/api/dogs/{other_dog.pk}').status_code, 404)
+        self.api.force_authenticate(self.other_user)
+        self.assertEqual(self.api.get(f'/api/dogs/{self.dog.pk}').status_code, 200)
+        self.assertEqual(self.api.patch(f'/api/dogs/{self.dog.pk}', {'notes': 'Fit'}, format='json').status_code, 200)
 
-    def test_exercise_types_are_read_only_for_non_staff(self):
+    def test_normal_users_cannot_change_exercise_types_or_plans(self):
+        self.api.force_authenticate(self.other_user)
         self.assertEqual(self.api.get('/api/exercise-types').status_code, 200)
         self.assertEqual(self.api.post('/api/exercise-types', {'name': 'Sprint'}, format='json').status_code, 403)
+        self.assertEqual(self.api.get(f'/api/training-plans/{self.plan.pk}/days').status_code, 200)
+        self.assertEqual(self.api.put(f'/api/training-plans/{self.plan.pk}/days', [], format='json').status_code, 403)
+        self.assertEqual(self.api.post(f'/api/training-plans/{self.plan.pk}/activate').status_code, 403)
+        response = self.api.post('/api/training/sessions', {'plannedActivityId': self.swim.pk, 'status': 'COMPLETED'},
+                                 format='json')
+        self.assertEqual(response.status_code, 201)
 
     def test_today_record_and_history_flow(self):
         today = self.api.get('/api/training/today').json()
@@ -52,11 +60,11 @@ class ApiTests(TrackerTestCase):
             'plannedActivityId': self.swim.pk, 'status': 'PLANNED',
         }, format='json')
         self.assertEqual(bad_status.status_code, 400)
-        self.api.force_authenticate(self.other_user)
-        foreign = self.api.post('/api/training/sessions', {
-            'plannedActivityId': self.swim.pk, 'status': 'COMPLETED',
+        other_dog = Dog.objects.create(owner=self.other_user, name='Rex')
+        mismatched = self.api.post('/api/training/sessions', {
+            'dogId': other_dog.pk, 'plannedActivityId': self.swim.pk, 'status': 'COMPLETED',
         }, format='json')
-        self.assertEqual(foreign.status_code, 400)
+        self.assertEqual(mismatched.status_code, 400)
 
     def test_plan_days_can_be_replaced(self):
         url = f'/api/training-plans/{self.plan.pk}/days'

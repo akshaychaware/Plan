@@ -17,11 +17,30 @@ class WebTests(TrackerTestCase):
     def record_url(self, day, activity=''):
         return f"{self.url('session_record')}?date={day:%Y-%m-%d}&activity={activity}"
 
-    def test_login_required_and_owner_scoping(self):
+    def test_login_required(self):
         self.client.logout()
         self.assertRedirects(self.client.get(self.url('dog_detail')), f"{reverse('login')}?next=/dogs/{self.dog.pk}/")
+
+    def test_normal_user_sees_everything_but_plan_and_history_are_read_only(self):
         self.client.force_login(self.other_user)
-        self.assertEqual(self.client.get(self.url('dog_detail')).status_code, 404)
+        self.assertContains(self.client.get(reverse('plan_app:dog_list')), 'Luna')
+        self.assertContains(self.client.get(self.url('dog_detail')), 'View plan')
+
+        plan_page = self.client.get(self.url('plan_edit'))
+        self.assertContains(plan_page, 'Read only')
+        self.assertNotContains(plan_page, 'day0-TOTAL_FORMS')
+        self.assertEqual(self.client.post(self.url('plan_edit'), {}).status_code, 403)
+        self.assertEqual(self.client.post(self.url('plan_new'), {}).status_code, 403)
+
+        self.client.post(self.url('session_quick_log', self.swim.pk))
+        session = self.dog.sessions.get()
+        self.assertNotContains(self.client.get(self.url('session_history')), self.url('session_edit', session.pk))
+        response = self.client.post(self.url('session_edit', session.pk), {
+            'exercise_type': self.swim.exercise_type_id, 'status': 'PARTIALLY_COMPLETED', 'actual_duration_minutes': 12,
+        })
+        self.assertEqual(response.status_code, 302)
+        session.refresh_from_db()
+        self.assertEqual(session.status, 'PARTIALLY_COMPLETED')
 
     def test_dashboard_shows_todays_activities(self):
         response = self.client.get(self.url('dog_detail'), {'period': 'month'})

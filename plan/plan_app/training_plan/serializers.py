@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from plan_app.core.api import OwnedDogField
+from plan_app.dog.models import Dog
 from plan_app.exercise.models import ExerciseType
 
 from . import services
@@ -8,7 +8,7 @@ from .models import PlannedActivity, TrainingPlan, TrainingPlanDay
 
 
 class TrainingPlanSerializer(serializers.ModelSerializer):
-    dog_id = OwnedDogField(source='dog')
+    dog_id = serializers.PrimaryKeyRelatedField(source='dog', queryset=Dog.objects.all())
 
     class Meta:
         model = TrainingPlan

@@ -284,12 +284,12 @@ COMPLETED   PARTIALLY_COMPLETED     SKIPPED
 
 # 14. REST API
 
-Base path `/api`. JSON keys are camelCase. Authentication: Django session (same-origin, CSRF-protected). All data is scoped to the signed-in user.
+Base path `/api`. JSON keys are camelCase. Authentication: Django session (same-origin, CSRF-protected). Permissions follow §16: every signed-in user can read everything; plan and exercise-type writes are admin-only.
 
 | Method & path | Purpose |
 |---|---|
 | `GET/POST /api/dogs`, `GET/PUT/PATCH /api/dogs/{id}` | Dogs |
-| `GET /api/exercise-types` (write: staff only) | Activity types |
+| `GET /api/exercise-types` (write: admin only) | Activity types |
 | `GET/POST /api/training-plans?dog=`, `GET/PUT/PATCH /api/training-plans/{id}` | Plans |
 | `POST /api/training-plans/{id}/activate` | Make a plan active |
 | `GET/PUT /api/training-plans/{id}/days` | Read / upsert the week's planned activities |
@@ -371,7 +371,18 @@ Implemented: Django authentication with login required for all pages and API end
 User → Dogs → Training Plans → Training Sessions
 ```
 
-Every query is scoped to the signed-in user's dogs. Accounts are created by an administrator (`createsuperuser` or `/admin/`). Token authentication for a future native mobile app is deferred.
+Access is shared across the team: every signed-in user sees all dogs. An **admin** is a user with *Staff status* or *Superuser* (`plan_app/core/access.py`).
+
+| Capability | Admin | Normal user |
+|---|---|---|
+| View dashboards, plans, history, statistics | ✓ | ✓ |
+| Add dogs, edit dog profiles | ✓ | ✓ |
+| Record sessions (incl. one-tap Done) and edit sessions | ✓ | ✓ |
+| Edit training plans, start plan versions (`PUT …/days`, `POST …/activate`) | ✓ | — (read-only, 403) |
+| Edit buttons in Training history | ✓ | — (hidden; history is read-only) |
+| Create/change exercise types | ✓ | — (403) |
+
+Rules are enforced on the server (`require_admin` in web views, `IsAdminOrReadOnly` in the API), not only hidden in the UI. Accounts are created by an administrator (`createsuperuser` or `/admin/`). Token authentication for a future native mobile app is deferred.
 
 ---
 

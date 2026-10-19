@@ -3,6 +3,10 @@ from rest_framework import permissions, serializers
 from rest_framework.generics import get_object_or_404
 from rest_framework.views import exception_handler as drf_exception_handler
 
+from plan_app.dog.models import Dog
+
+from .access import is_admin
+
 
 def exception_handler(exc, context):
     if isinstance(exc, DjangoValidationError):
@@ -14,18 +18,13 @@ def exception_handler(exc, context):
     return drf_exception_handler(exc, context)
 
 
-class IsStaffOrReadOnly(permissions.BasePermission):
+class IsAdminOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
-        return request.method in permissions.SAFE_METHODS or request.user.is_staff
-
-
-class OwnedDogField(serializers.PrimaryKeyRelatedField):
-    def get_queryset(self):
-        return self.context['request'].user.dogs.all()
+        return request.method in permissions.SAFE_METHODS or is_admin(request.user)
 
 
 def resolve_dog(request):
-    dogs = request.user.dogs.all()
+    dogs = Dog.objects.all()
     dog_id = request.query_params.get('dog')
     if dog_id:
         return get_object_or_404(dogs, pk=dog_id)

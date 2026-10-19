@@ -40,7 +40,7 @@
       {% empty %}
         <p class="muted m-0">
           No training planned today.
-          {% if not plan %}<a href="{% url 'plan_app:plan_edit' dog.pk %}">Create a training plan</a>.{% endif %}
+          {% if not plan and is_admin %}<a href="{% url 'plan_app:plan_edit' dog.pk %}">Create a training plan</a>.{% endif %}
         </p>
       {% endfor %}
     </div>
@@ -58,7 +58,7 @@
 <section class="card">
   <div class="card-header">
     <h2>This week</h2>
-    <a href="{% url 'plan_app:plan_edit' dog.pk %}">Edit plan</a>
+    <a href="{% url 'plan_app:plan_edit' dog.pk %}">{{ is_admin|yesno:"Edit plan,View plan" }}</a>
   </div>
   <div class="week">
     {% for entry in week %}

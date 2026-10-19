@@ -1,0 +1,37 @@
+<section class="card">
+  <div class="card-header">
+    <h2>{{ plan.name|default:"No plan yet" }}</h2>
+    <span class="badge">Read only</span>
+  </div>
+  {% if plan.pk %}
+    <p class="muted m-0">
+      Active since {{ plan.start_date|date:"j M Y" }}{% if plan.end_date %} until {{ plan.end_date|date:"j M Y" }}{% endif %}.
+      Only administrators can change the plan.
+    </p>
+  {% else %}
+    <p class="muted m-0">An administrator hasn’t set up a training plan for {{ dog.name|capfirst }} yet.</p>
+  {% endif %}
+</section>
+
+{% if plan.pk %}
+  <div class="plan-days">
+    {% for day in plan.days.all %}
+      <section class="card plan-day">
+        <div class="card-header"><h2>{{ day.get_day_of_week_display }}</h2></div>
+        <div class="activity-list">
+          {% for activity in day.activities.all %}
+            <div class="activity-row act-{{ activity.exercise_type.name|slugify }}">
+              <span class="dot"></span>
+              <div class="activity-main">
+                <strong>{{ activity.summary }}</strong>
+                {% if activity.notes %}<span class="muted">{{ activity.notes }}</span>{% endif %}
+              </div>
+            </div>
+          {% empty %}
+            <p class="muted m-0">Nothing planned.</p>
+          {% endfor %}
+        </div>
+      </section>
+    {% endfor %}
+  </div>
+{% endif %}

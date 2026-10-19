@@ -1,7 +1,7 @@
 from django.utils import timezone
 from rest_framework import serializers
 
-from plan_app.core.api import OwnedDogField
+from plan_app.dog.models import Dog
 from plan_app.exercise.models import ExerciseType
 from plan_app.training_plan.models import PlannedActivity
 
@@ -9,14 +9,11 @@ from . import services
 from .models import TrainingSession
 
 
-class OwnedPlannedActivityField(serializers.PrimaryKeyRelatedField):
-    def get_queryset(self):
-        return PlannedActivity.objects.filter(training_plan_day__training_plan__dog__owner=self.context['request'].user)
-
-
 class TrainingSessionSerializer(serializers.ModelSerializer):
-    dog_id = OwnedDogField(source='dog', required=False)
-    planned_activity_id = OwnedPlannedActivityField(source='planned_activity', required=False, allow_null=True)
+    dog_id = serializers.PrimaryKeyRelatedField(source='dog', queryset=Dog.objects.all(), required=False)
+    planned_activity_id = serializers.PrimaryKeyRelatedField(
+        source='planned_activity', queryset=PlannedActivity.objects.all(), required=False, allow_null=True
+    )
     exercise_type_id = serializers.PrimaryKeyRelatedField(
         source='exercise_type', queryset=ExerciseType.objects.all(), required=False
     )

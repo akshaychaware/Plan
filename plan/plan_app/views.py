@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods, require_POST
 
+from .core.access import require_admin
 from .forms import DogForm, NewTrainingPlanForm, PlannedActivityFormSet, TrainingPlanForm, TrainingSessionForm
 from .models import Dog, TrainingPlan, TrainingSession, TrainingPlanDay, Weekday
 from .statistics.services import PERIODS, summarize, week_progress
@@ -17,12 +18,12 @@ from .training_session import services as session_services
 
 
 def _get_dog(request, pk):
-    return get_object_or_404(Dog, pk=pk, owner=request.user)
+    return get_object_or_404(Dog, pk=pk)
 
 
 @login_required
 def dog_list(request):
-    return render(request, 'plan_app/dog_list.html', {'dogs': request.user.dogs.all()})
+    return render(request, 'plan_app/dog_list.html', {'dogs': Dog.objects.all()})
 
 
 @login_required
@@ -78,6 +79,8 @@ def session_quick_log(request, pk, activity_pk):
 @require_http_methods(['GET', 'POST'])
 def plan_edit(request, pk):
     dog = _get_dog(request, pk)
+    if request.method == 'POST':
+        require_admin(request.user)
     plan = plan_services.active_plan(dog) or TrainingPlan(dog=dog, start_date=timezone.localdate())
     days = {day.day_of_week: day for day in plan.days.all()} if plan.pk else {}
     plan_form = TrainingPlanForm(request.POST or None, instance=plan, prefix='plan')
@@ -111,6 +114,7 @@ def plan_edit(request, pk):
 @require_POST
 def plan_new(request, pk):
     dog = _get_dog(request, pk)
+    require_admin(request.user)
     form = NewTrainingPlanForm(request.POST)
     if form.is_valid():
         try:

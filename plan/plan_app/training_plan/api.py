@@ -1,6 +1,8 @@
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+
+from plan_app.core.api import IsAdminOrReadOnly
 
 from . import services
 from .models import TrainingPlan
@@ -12,9 +14,10 @@ class TrainingPlanViewSet(
     viewsets.GenericViewSet,
 ):
     serializer_class = TrainingPlanSerializer
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 
     def get_queryset(self):
-        plans = TrainingPlan.objects.filter(dog__owner=self.request.user)
+        plans = TrainingPlan.objects.all()
         dog_id = self.request.query_params.get('dog')
         return plans.filter(dog_id=dog_id) if dog_id and dog_id.isdigit() else plans
 

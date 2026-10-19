@@ -30,9 +30,11 @@
               </td>
               <td data-label="Status"><span class="badge badge-{{ session.status|lower }}">{{ session.get_status_display }}</span></td>
               <td data-label="Notes" class="span-full">{{ session.notes|linebreaksbr|default:"—" }}</td>
-              <td class="span-full">
-                <a class="btn btn-secondary btn-sm" href="{% url 'plan_app:session_edit' dog.pk session.pk %}">Edit</a>
-              </td>
+              {% if is_admin %}
+                <td class="span-full">
+                  <a class="btn btn-secondary btn-sm" href="{% url 'plan_app:session_edit' dog.pk session.pk %}">Edit</a>
+                </td>
+              {% endif %}
             </tr>
           {% endfor %}
         </tbody>

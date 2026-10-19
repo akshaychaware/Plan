@@ -1,6 +1,6 @@
 from rest_framework import mixins, permissions, viewsets
 
-from plan_app.core.api import IsStaffOrReadOnly
+from plan_app.core.api import IsAdminOrReadOnly
 
 from .models import ExerciseType
 from .serializers import ExerciseTypeSerializer
@@ -12,4 +12,4 @@ class ExerciseTypeViewSet(
 ):
     queryset = ExerciseType.objects.all()
     serializer_class = ExerciseTypeSerializer
-    permission_classes = [permissions.IsAuthenticated, IsStaffOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
