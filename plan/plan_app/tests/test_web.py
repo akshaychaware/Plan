@@ -48,10 +48,15 @@ class WebTests(TrackerTestCase):
         self.assertContains(self.client.get(self.url('dog_detail')), 'data-weigh-in-reminder')
         response = self.client.post(self.url('weight_log'), {'date': f'{self.today:%Y-%m-%d}', 'weight_kg': '25.2'})
         self.assertRedirects(response, self.url('weight_log'))
-        self.assertContains(self.client.get(self.url('weight_log')), '25.200 kg')
+        locked = self.client.get(self.url('weight_log'))
+        self.assertContains(locked, '25.200 kg')
+        self.assertContains(locked, '(15 days left)')
+        self.assertContains(locked, 'disabled>')
         self.assertNotContains(self.client.get(self.url('dog_detail')), 'data-weigh-in-reminder')
+        response = self.client.post(self.url('weight_log'), {'date': f'{self.today:%Y-%m-%d}', 'weight_kg': '30'})
+        self.assertEqual(response.status_code, 200)
         self.dog.refresh_from_db()
-        self.assertEqual(self.dog.weight_kg, Decimal('25.2'))
+        self.assertEqual((self.dog.weight_kg, self.dog.weights.count()), (Decimal('25.2'), 1))
 
     def test_marathi_language_switch(self):
         response = self.client.post(reverse('set_language'), {'language': 'mr', 'next': self.url('dog_detail')})

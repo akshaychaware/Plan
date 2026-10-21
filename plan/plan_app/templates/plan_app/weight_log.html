@@ -14,12 +14,23 @@
 {% include 'plan_app/dog_tabs.html' %}
 
 <div class="grid grid-2">
-  <form method="post" class="card form-stack">
-    {% csrf_token %}
-    <div class="card-header"><h2>{% translate "Record weight" %}</h2></div>
-    {{ form }}
-    <div class="form-actions"><button class="btn" type="submit">{% translate "Save weigh-in" %}</button></div>
-  </form>
+  {% if weigh_in.due %}
+    <form method="post" class="card form-stack">
+      {% csrf_token %}
+      <div class="card-header"><h2>{% translate "Record weight" %}</h2></div>
+      {{ form }}
+      <div class="form-actions"><button class="btn" type="submit">{% translate "Save weigh-in" %}</button></div>
+    </form>
+  {% else %}
+    <section class="card form-stack">
+      <div class="card-header"><h2>{% translate "Record weight" %}</h2></div>
+      <p class="m-0">
+        {% blocktranslate with name=dog.name|capfirst date=weigh_in.next_due|date:"D, j M" count days=weigh_in.days_left %}The next weigh-in for {{ name }} opens on {{ date }} ({{ days }} day left).{% plural %}The next weigh-in for {{ name }} opens on {{ date }} ({{ days }} days left).{% endblocktranslate %}
+      </p>
+      <p class="muted m-0">{% translate "Weight can be recorded once every 15 days." %}</p>
+      <div class="form-actions"><button class="btn" type="button" disabled>{% translate "Save weigh-in" %}</button></div>
+    </section>
+  {% endif %}
 
   <div class="card">
     {% if log.rows %}

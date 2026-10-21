@@ -77,18 +77,27 @@ def dog_detail(request, pk):
 def weight_log(request, pk):
     dog = _get_dog(request, pk)
     today = timezone.localdate()
+    weigh_in = dog_services.weigh_in_status(dog, today)
     form = WeightEntryForm(request.POST or None, initial={'date': today})
+    date_attrs = {'max': f'{today:%Y-%m-%d}'}
+    if weigh_in['last']:
+        date_attrs['min'] = f"{weigh_in['next_due']:%Y-%m-%d}"
+    form.fields['date'].widget.attrs.update(date_attrs)
     if request.method == 'POST' and form.is_valid():
-        dog_services.record_weight(dog, **form.cleaned_data)
-        messages.success(request, _('Weight for %(dog)s on %(date)s saved.') % {
-            'dog': dog, 'date': date_format(form.cleaned_data['date'], 'j M Y'),
-        })
-        return redirect('plan_app:weight_log', pk=dog.pk)
+        try:
+            dog_services.record_weight(dog, **form.cleaned_data)
+        except ValidationError as error:
+            form.add_error(None, error)
+        else:
+            messages.success(request, _('Weight for %(dog)s on %(date)s saved.') % {
+                'dog': dog, 'date': date_format(form.cleaned_data['date'], 'j M Y'),
+            })
+            return redirect('plan_app:weight_log', pk=dog.pk)
     return render(request, 'plan_app/weight_log.html', {
         'dog': dog,
         'form': form,
         'log': dog_services.weight_log(dog, today),
-        'weigh_in': dog_services.weigh_in_status(dog, today),
+        'weigh_in': weigh_in,
     })
 
 

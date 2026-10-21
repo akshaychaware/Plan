@@ -180,8 +180,12 @@ class WeightServiceTests(TrackerTestCase):
         first, second = self.today - timedelta(days=20), self.today - timedelta(days=5)
         dogs.record_weight(self.dog, first, Decimal('25'))
         self.assertTrue(dogs.weigh_in_status(self.dog, self.today)['due'])
-        dogs.record_weight(self.dog, second, Decimal('24.6'))
-        dogs.record_weight(self.dog, second, Decimal('24.5'), 'Re-weighed')
+        with self.assertRaises(ValidationError):
+            dogs.record_weight(self.dog, second - timedelta(days=1), Decimal('24.6'))
+        dogs.record_weight(self.dog, second, Decimal('24.5'))
+        with self.assertRaises(ValidationError):
+            dogs.record_weight(self.dog, second, Decimal('24.4'), 'Re-weighed')
+        self.assertEqual(self.dog.weights.count(), 2)
         walking = self.types['Walking']
         for offset, km in ((10, '1'), (3, '2')):
             sessions.record_session(dog=self.dog, day=self.today - timedelta(days=offset), exercise_type=walking,
@@ -190,7 +194,8 @@ class WeightServiceTests(TrackerTestCase):
         self.dog.refresh_from_db()
         self.assertEqual(self.dog.weight_kg, Decimal('24.5'))
         status = dogs.weigh_in_status(self.dog, self.today)
-        self.assertEqual((status['due'], status['next_due']), (False, second + dogs.WEIGH_IN_INTERVAL))
+        self.assertEqual((status['due'], status['next_due'], status['days_left']),
+                         (False, second + dogs.WEIGH_IN_INTERVAL, 10))
         log = dogs.weight_log(self.dog, self.today)
         self.assertEqual(
             [(row['entry'].date, row['change_kg'], row['calories_kcal']) for row in log['rows']],

@@ -37,10 +37,6 @@ msgid "%(dog)s added. Now configure the weekly plan."
 msgstr "%(dog)s जोडले. आता साप्ताहिक योजना तयार करा."
 
 #, python-format
-msgid "Weight for %(dog)s on %(date)s saved."
-msgstr "%(dog)s चे %(date)s रोजीचे वजन जतन केले."
-
-#, python-format
 msgid "%(activity)s logged as completed."
 msgstr "%(activity)s पूर्ण म्हणून नोंदवले."
 
@@ -56,8 +52,16 @@ msgid "%(dog)s updated."
 msgstr "%(dog)s अद्ययावत केले."
 
 #, python-format
+msgid "Weight for %(dog)s on %(date)s saved."
+msgstr "%(dog)s चे %(date)s रोजीचे वजन जतन केले."
+
+#, python-format
 msgid "New plan “%(name)s” started."
 msgstr "नवीन योजना “%(name)s” सुरू झाली."
+
+#, python-format
+msgid "The next weigh-in for %(dog)s can be recorded from %(date)s."
+msgstr "%(dog)s चे पुढील वजन %(date)s पासून नोंदवता येईल."
 
 msgid "name"
 msgstr "नाव"
@@ -398,6 +402,15 @@ msgstr "शेवटच्या वजनानंतर %(calories)s kcal ख�
 
 msgid "Save weigh-in"
 msgstr "वजन जतन करा"
+
+#, python-format
+msgid "The next weigh-in for %(name)s opens on %(date)s (%(days)s day left)."
+msgid_plural "The next weigh-in for %(name)s opens on %(date)s (%(days)s days left)."
+msgstr[0] "%(name)s चे पुढील वजन %(date)s रोजी नोंदवता येईल (%(days)s दिवस बाकी)."
+msgstr[1] "%(name)s चे पुढील वजन %(date)s रोजी नोंदवता येईल (%(days)s दिवस बाकी)."
+
+msgid "Weight can be recorded once every 15 days."
+msgstr "वजन दर 15 दिवसांनी एकदाच नोंदवता येते."
 
 msgid "Date"
 msgstr "तारीख"

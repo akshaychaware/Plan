@@ -1,8 +1,11 @@
 from datetime import timedelta
 from decimal import Decimal
 
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Sum
+from django.utils.formats import date_format
+from django.utils.translation import gettext
 
 from .models import Dog, WeightEntry
 
@@ -11,9 +14,13 @@ WEIGH_IN_INTERVAL = timedelta(days=15)
 
 @transaction.atomic
 def record_weight(dog, date, weight_kg, notes=''):
-    """Save the weigh-in for `date` (replacing one already there) and keep the dog's current weight in sync."""
-    entry = dog.weights.filter(date=date).first() or WeightEntry(dog=dog, date=date)
-    entry.weight_kg, entry.notes = weight_kg, notes
+    """Save a weigh-in at least WEIGH_IN_INTERVAL after the last one and keep the dog's current weight in sync."""
+    status = weigh_in_status(dog, date)
+    if not status['due']:
+        raise ValidationError({'date': gettext('The next weigh-in for %(dog)s can be recorded from %(date)s.') % {
+            'dog': dog, 'date': date_format(status['next_due'], 'j M Y'),
+        }})
+    entry = WeightEntry(dog=dog, date=date, weight_kg=weight_kg, notes=notes)
     entry.full_clean()
     entry.save()
     sync_current_weight(dog)
@@ -30,7 +37,7 @@ def sync_current_weight(dog):
 def weigh_in_status(dog, today):
     last = dog.weights.first()
     next_due = last.date + WEIGH_IN_INTERVAL if last else today
-    return {'last': last, 'next_due': next_due, 'due': next_due <= today}
+    return {'last': last, 'next_due': next_due, 'due': next_due <= today, 'days_left': max(0, (next_due - today).days)}
 
 
 def weight_log(dog, today):
