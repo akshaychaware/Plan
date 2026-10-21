@@ -19,21 +19,36 @@
   {% if page %}
     <div class="table-wrap">
       <table class="table-responsive">
-        <thead><tr><th>Date</th><th>Planned</th><th>Actual</th><th>Status</th><th>Notes</th><th></th></tr></thead>
+        <thead><tr><th>Date</th><th>Planned</th><th>Actual</th><th>Status</th><th>Calories</th><th>Notes</th><th></th></tr></thead>
         <tbody>
-          {% for session in page %}
+          {% for day in days %}
             <tr>
-              <th scope="row">{{ session.date|date:"D, j M Y" }}</th>
-              <td data-label="Planned">{{ session.planned_summary }}</td>
-              <td data-label="Actual">
-                <span class="inline-dot act-{{ session.exercise_type.name|slugify }}"><span class="dot"></span>{{ session.actual_summary }}</span>
+              <th scope="row">{{ day.date|date:"D, j M Y" }}</th>
+              <td data-label="Planned"><ul class="cell-list">
+                {% for session in day.sessions %}<li>{{ session.planned_summary }}</li>{% endfor %}
+              </ul></td>
+              <td data-label="Actual"><ul class="cell-list">
+                {% for session in day.sessions %}
+                  <li><span class="inline-dot act-{{ session.exercise_type.name|slugify }}"><span class="dot"></span>{{ session.actual_summary }}</span></li>
+                {% endfor %}
+              </ul></td>
+              <td data-label="Status"><ul class="cell-list">
+                {% for session in day.sessions %}
+                  <li><span class="badge badge-{{ session.status|lower }}">{{ session.get_status_display }}</span></li>
+                {% endfor %}
+              </ul></td>
+              <td data-label="Calories">
+                {% if day.calories_kcal is not None %}<strong>{{ day.calories_kcal|floatformat:"-1" }} kcal</strong>{% else %}—{% endif %}
               </td>
-              <td data-label="Status"><span class="badge badge-{{ session.status|lower }}">{{ session.get_status_display }}</span></td>
-              <td data-label="Notes" class="span-full">{{ session.notes|linebreaksbr|default:"—" }}</td>
+              <td data-label="Notes" class="span-full"><ul class="cell-list">
+                {% for session in day.sessions %}<li>{{ session.notes|linebreaksbr|default:"—" }}</li>{% endfor %}
+              </ul></td>
               {% if is_admin %}
-                <td class="span-full">
-                  <a class="btn btn-secondary btn-sm" href="{% url 'plan_app:session_edit' dog.pk session.pk %}">Edit</a>
-                </td>
+                <td class="span-full"><ul class="cell-list">
+                  {% for session in day.sessions %}
+                    <li><a class="btn btn-secondary btn-sm" href="{% url 'plan_app:session_edit' dog.pk session.pk %}" aria-label="Edit {{ session.exercise_type }}">Edit</a></li>
+                  {% endfor %}
+                </ul></td>
               {% endif %}
             </tr>
           {% endfor %}

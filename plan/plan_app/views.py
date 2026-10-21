@@ -176,9 +176,12 @@ def session_history(request, pk):
         sessions = sessions.filter(status=status)
     else:
         status = ''
+    dates = sessions.order_by('-date').values_list('date', flat=True).distinct()
+    page = Paginator(dates, 20).get_page(request.GET.get('page'))
     return render(request, 'plan_app/session_history.html', {
         'dog': dog,
-        'page': Paginator(sessions, 20).get_page(request.GET.get('page')),
+        'page': page,
+        'days': session_services.history_days(sessions, page),
         'status': status,
         'statuses': TrainingSession.Status.choices,
     })

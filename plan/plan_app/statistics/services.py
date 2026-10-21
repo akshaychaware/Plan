@@ -50,6 +50,7 @@ def summarize(dog, period='all', today=None):
         skipped=Count('id', filter=Q(status=Status.SKIPPED)),
         total_minutes=Sum('actual_duration_minutes'),
         total_distance_km=Sum('actual_distance_km'),
+        total_calories_kcal=Sum('exercise_type__average_calories_kcal', filter=~Q(status=Status.SKIPPED)),
     )
     distinct_days = sessions.order_by().values('date').distinct()
     by_exercise = list(
@@ -60,6 +61,7 @@ def summarize(dog, period='all', today=None):
             total_minutes=Sum('actual_duration_minutes'),
             average_minutes=Avg('actual_duration_minutes'),
             total_distance_km=Sum('actual_distance_km'),
+            total_calories_kcal=Sum('exercise_type__average_calories_kcal'),
         )
         .order_by('-sessions', 'exercise')
     )
@@ -85,8 +87,14 @@ def week_progress(week):
         if a['planned'] and a['planned'].exercise_type.tracks_metrics
     ]
     done = sum(1 for a in training if a['session'] and a['session'].status != Status.SKIPPED)
+    calories = sum(
+        a['session'].exercise_type.average_calories_kcal or 0
+        for entry in week for a in entry['activities']
+        if a['session'] and a['session'].status != Status.SKIPPED
+    )
     return {
         'done': done,
         'target': len(training),
         'percent': round(100 * done / len(training)) if training else 0,
+        'calories': calories,
     }

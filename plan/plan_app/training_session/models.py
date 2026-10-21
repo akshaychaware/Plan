@@ -71,6 +71,10 @@ class TrainingSession(TimeStampedModel):
             self.exercise_type, self.actual_duration_minutes, self.actual_distance_km, self.actual_repetitions
         )
 
+    @property
+    def calories_kcal(self):
+        return None if self.status == self.Status.SKIPPED else self.exercise_type.average_calories_kcal
+
     def clean(self):
         if self.date and self.date > timezone.localdate():
             raise ValidationError('Sessions cannot be recorded for future dates.')

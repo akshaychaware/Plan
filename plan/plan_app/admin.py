@@ -10,7 +10,7 @@ class DogAdmin(admin.ModelAdmin):
 
 @admin.register(ExerciseType)
 class ExerciseTypeAdmin(admin.ModelAdmin):
-    list_display = ['name', 'tracks_metrics', 'description']
+    list_display = ['name', 'tracks_metrics', 'average_calories_kcal', 'description']
 
 
 class TrainingPlanDayInline(admin.TabularInline):

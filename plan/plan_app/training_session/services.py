@@ -51,6 +51,18 @@ def month_overview(dog, day):
     return overview(dog, first, (first + timedelta(days=32)).replace(day=1) - timedelta(days=1))
 
 
+def history_days(sessions, dates):
+    """One entry per date with its sessions and their combined calories (None when no session has calories)."""
+    by_date = {day: [] for day in dates}
+    for session in sessions.filter(date__in=list(by_date)):
+        by_date[session.date].append(session)
+    days = []
+    for day, day_sessions in by_date.items():
+        calories = [s.calories_kcal for s in day_sessions if s.calories_kcal is not None]
+        days.append({'date': day, 'sessions': day_sessions, 'calories_kcal': sum(calories) if calories else None})
+    return days
+
+
 @transaction.atomic
 def save_session(session, **values):
     for field, value in values.items():

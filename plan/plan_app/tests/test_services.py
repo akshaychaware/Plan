@@ -1,4 +1,5 @@
 from datetime import timedelta
+from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 
@@ -92,3 +93,15 @@ class StatisticsServiceTests(TrackerTestCase):
 
         progress = week_progress(sessions.week_overview(self.dog, self.today))
         self.assertEqual((progress['done'], progress['target']), (1, 2))
+
+    def test_calories_count_non_skipped_sessions(self):
+        record = sessions.record_session
+        record(dog=self.dog, day=self.today, planned_activity=self.swim, status=Status.COMPLETED)
+        record(dog=self.dog, day=self.today, planned_activity=self.walk, status=Status.SKIPPED)
+        record(dog=self.dog, day=self.today, exercise_type=self.types['Hill Climbing'],
+               status=Status.PARTIALLY_COMPLETED)
+
+        for period in ('week', 'month', 'all'):
+            self.assertEqual(summarize(self.dog, period, self.today)['total_calories_kcal'], Decimal('135'))
+        for overview in (sessions.week_overview, sessions.month_overview):
+            self.assertEqual(week_progress(overview(self.dog, self.today))['calories'], Decimal('135'))

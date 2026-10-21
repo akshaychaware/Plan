@@ -118,6 +118,7 @@
     <div class="stat tone-primary"><span class="stat-value">{{ stats.completion_rate }}%</span><span class="stat-label">Completion</span></div>
     <div class="stat tone-accent"><span class="stat-value">{{ stats.total_minutes|default:0 }}</span><span class="stat-label">Minutes</span></div>
     <div class="stat tone-accent"><span class="stat-value">{{ stats.total_distance_km|default:0|floatformat:"-2" }}</span><span class="stat-label">Kilometres</span></div>
+    <div class="stat tone-warning"><span class="stat-value">{{ stats.total_calories_kcal|default:0|floatformat:"-1" }}</span><span class="stat-label">kcal</span></div>
   </div>
   {% if stats.by_exercise %}
     <h2 class="section-title">Activity breakdown</h2>
@@ -130,6 +131,7 @@
               {{ row.sessions }} session{{ row.sessions|pluralize }}
               {% if row.total_minutes %} · {{ row.total_minutes }} min (avg {{ row.average_minutes|floatformat:"-1" }}){% endif %}
               {% if row.total_distance_km %} · {{ row.total_distance_km|floatformat:"-2" }} km{% endif %}
+              {% if row.total_calories_kcal %} · {{ row.total_calories_kcal|floatformat:"-1" }} kcal{% endif %}
             </span>
           </div>
           <div class="bar"><span style="width: {{ row.share }}%"></span></div>

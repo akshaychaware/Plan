@@ -1,4 +1,5 @@
 from datetime import timedelta
+from decimal import Decimal
 
 from django.urls import reverse
 
@@ -108,6 +109,10 @@ class WebTests(TrackerTestCase):
         self.client.post(self.url('session_quick_log', self.swim.pk))
         response = self.client.get(self.url('session_history'), {'status': 'COMPLETED'})
         self.assertEqual(len(response.context['page']), 1)
+        self.assertContains(response, '70 kcal')
+        self.client.post(self.url('session_quick_log', self.walk.pk))
+        days = self.client.get(self.url('session_history')).context['days']
+        self.assertEqual([(len(d['sessions']), d['calories_kcal']) for d in days], [(2, Decimal('97.5'))])
 
     def test_pwa_endpoints(self):
         self.client.logout()
