@@ -277,11 +277,17 @@ msgstr "आणखी %(remaining)s kcal बाकी."
 msgid "Goal reached!"
 msgstr "लक्ष्य पूर्ण झाले!"
 
+msgid "Recent & upcoming"
+msgstr "अलीकडील आणि आगामी"
+
 msgid "Edit plan"
 msgstr "योजना संपादित करा"
 
 msgid "View plan"
 msgstr "योजना पहा"
+
+msgid "Upcoming"
+msgstr "आगामी"
 
 msgid "Partial"
 msgstr "अंशतः"
@@ -446,9 +452,6 @@ msgstr "लॉग आउट"
 
 msgid "Dismiss"
 msgstr "बंद करा"
-
-msgid "Upcoming"
-msgstr "आगामी"
 
 msgid "Not recorded"
 msgstr "नोंद नाही"

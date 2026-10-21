@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -59,6 +59,7 @@ def dog_detail(request, pk):
         'today': today,
         'today_entry': week[today.weekday()],
         'week': week,
+        'days_window': session_services.overview(dog, today - timedelta(days=2), today + timedelta(days=3)),
         'progress': progress,
         'calorie_goal': calorie_goal_progress(progress['calories'], dog.weekly_calorie_goal_kcal),
         'month_progress': week_progress(session_services.month_overview(dog, today)),

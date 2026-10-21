@@ -85,6 +85,9 @@ class WebTests(TrackerTestCase):
         self.assertContains(response, 'Monthly progress')
         self.assertContains(response, f'class="back-link" href="{reverse("plan_app:dog_list")}"')
         self.assertIn(response.context['month_progress']['target'], (8, 10))
+        days = [entry['date'] for entry in response.context['days_window']]
+        self.assertEqual(days, [self.today + timedelta(days=offset) for offset in range(-2, 4)])
+        self.assertContains(response, 'day-watermark', count=3)
 
     def test_record_flow_walks_through_each_planned_activity(self):
         self.assertEqual(self.client.get(self.record_url(self.today)).context['session'].planned_activity, self.swim)

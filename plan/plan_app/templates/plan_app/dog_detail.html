@@ -78,18 +78,19 @@
 
 <section class="card">
   <div class="card-header">
-    <h2>{% translate "This week" %}</h2>
+    <h2>{% translate "Recent & upcoming" %}</h2>
     <a href="{% url 'plan_app:plan_edit' dog.pk %}">{% if is_admin %}{% translate "Edit plan" %}{% else %}{% translate "View plan" %}{% endif %}</a>
   </div>
   <div class="week">
-    {% for entry in week %}
+    {% for entry in days_window %}
       {% with first=entry.activities.0 %}
       {% firstof first.planned.exercise_type.name first.session.exercise_type.name as lead %}
       {% if entry.date <= today %}
-        <a class="day act-{{ lead|slugify }}{% if entry.date == today %} is-today{% endif %}"
+        <a class="day act-{{ lead|slugify }}{% if entry.date == today %} is-today{% else %} is-past{% endif %}"
            href="{% url 'plan_app:session_record' dog.pk %}?date={{ entry.date|date:'Y-m-d' }}">
       {% else %}
-        <div class="day act-{{ lead|slugify }}">
+        <div class="day is-upcoming act-{{ lead|slugify }}">
+          <span class="day-watermark" aria-hidden="true">{% translate "Upcoming" %}</span>
       {% endif %}
           <span class="day-name">{{ entry.date|date:"D" }}</span>
           <span class="day-date">{{ entry.date|date:"j" }}</span>
