@@ -4,13 +4,14 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext, gettext_lazy as _
 
 METRICS = ('duration_minutes', 'distance_km', 'repetitions')
 
 
 def validate_not_future(value):
     if value > timezone.localdate():
-        raise ValidationError('Date cannot be in the future.')
+        raise ValidationError(_('Date cannot be in the future.'))
 
 
 def duration_field(verbose_name):
@@ -34,11 +35,11 @@ def repetitions_field(verbose_name):
 
 def describe_activity(exercise_type, minutes=None, distance_km=None, repetitions=None):
     if exercise_type is None:
-        return 'No plan'
+        return gettext('No plan')
     metrics = ' · '.join(filter(None, [
         distance_km and f'{distance_km.normalize():f} km',
         minutes and f'{minutes} min',
-        repetitions and f'{repetitions} reps',
+        repetitions and gettext('%(count)s reps') % {'count': repetitions},
     ]))
     return f'{exercise_type} — {metrics}' if metrics else str(exercise_type)
 

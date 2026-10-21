@@ -1,15 +1,16 @@
 {% extends 'plan_app/base.html' %}
-{% block title %}History · {{ dog.name }}{% endblock %}
+{% load i18n %}
+{% block title %}{% translate "History" %} · {{ dog.name }}{% endblock %}
 {% block content %}
 <div>
-  <h1>Training history</h1>
-  <p class="muted m-0">Every recorded session for {{ dog.name|capfirst }}, planned vs actual, exactly as it was at the time.</p>
+  <h1>{% translate "Training history" %}</h1>
+  <p class="muted m-0">{% blocktranslate with name=dog.name|capfirst %}Every recorded session for {{ name }}, planned vs actual, exactly as it was at the time.{% endblocktranslate %}</p>
 </div>
 
 {% include 'plan_app/dog_tabs.html' %}
 
-<nav class="segmented" aria-label="Filter by status">
-  <a href="?"{% if not status %} aria-current="true"{% endif %}>All</a>
+<nav class="segmented" aria-label="{% translate 'Filter by status' %}">
+  <a href="?"{% if not status %} aria-current="true"{% endif %}>{% translate "All" %}</a>
   {% for value, label in statuses %}
     <a href="?status={{ value }}"{% if value == status %} aria-current="true"{% endif %}>{{ label }}</a>
   {% endfor %}
@@ -19,34 +20,34 @@
   {% if page %}
     <div class="table-wrap">
       <table class="table-responsive">
-        <thead><tr><th>Date</th><th>Planned</th><th>Actual</th><th>Status</th><th>Calories</th><th>Notes</th><th></th></tr></thead>
+        <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Planned" %}</th><th>{% translate "Actual" %}</th><th>{% translate "Status" %}</th><th>{% translate "Calories" %}</th><th>{% translate "Notes" %}</th><th></th></tr></thead>
         <tbody>
           {% for day in days %}
             <tr>
               <th scope="row">{{ day.date|date:"D, j M Y" }}</th>
-              <td data-label="Planned"><ul class="cell-list">
+              <td data-label="{% translate 'Planned' %}"><ul class="cell-list">
                 {% for session in day.sessions %}<li>{{ session.planned_summary }}</li>{% endfor %}
               </ul></td>
-              <td data-label="Actual"><ul class="cell-list">
+              <td data-label="{% translate 'Actual' %}"><ul class="cell-list">
                 {% for session in day.sessions %}
                   <li><span class="inline-dot act-{{ session.exercise_type.name|slugify }}"><span class="dot"></span>{{ session.actual_summary }}</span></li>
                 {% endfor %}
               </ul></td>
-              <td data-label="Status"><ul class="cell-list">
+              <td data-label="{% translate 'Status' %}"><ul class="cell-list">
                 {% for session in day.sessions %}
                   <li><span class="badge badge-{{ session.status|lower }}">{{ session.get_status_display }}</span></li>
                 {% endfor %}
               </ul></td>
-              <td data-label="Calories">
+              <td data-label="{% translate 'Calories' %}">
                 {% if day.calories_kcal is not None %}<strong>{{ day.calories_kcal|floatformat:"-1" }} kcal</strong>{% else %}—{% endif %}
               </td>
-              <td data-label="Notes" class="span-full"><ul class="cell-list">
+              <td data-label="{% translate 'Notes' %}" class="span-full"><ul class="cell-list">
                 {% for session in day.sessions %}<li>{{ session.notes|linebreaksbr|default:"—" }}</li>{% endfor %}
               </ul></td>
               {% if is_admin %}
                 <td class="span-full"><ul class="cell-list">
                   {% for session in day.sessions %}
-                    <li><a class="btn btn-secondary btn-sm" href="{% url 'plan_app:session_edit' dog.pk session.pk %}" aria-label="Edit {{ session.exercise_type }}">Edit</a></li>
+                    <li><a class="btn btn-secondary btn-sm" href="{% url 'plan_app:session_edit' dog.pk session.pk %}" aria-label="{% blocktranslate with name=session.exercise_type %}Edit {{ name }}{% endblocktranslate %}">{% translate "Edit" %}</a></li>
                   {% endfor %}
                 </ul></td>
               {% endif %}
@@ -57,17 +58,17 @@
     </div>
     {% if page.has_other_pages %}
       <nav class="pagination">
-        {% if page.has_previous %}<a class="btn btn-secondary" href="?status={{ status }}&page={{ page.previous_page_number }}">Previous</a>{% endif %}
-        <span class="muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
-        {% if page.has_next %}<a class="btn btn-secondary" href="?status={{ status }}&page={{ page.next_page_number }}">Next</a>{% endif %}
+        {% if page.has_previous %}<a class="btn btn-secondary" href="?status={{ status }}&page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
+        <span class="muted">{% blocktranslate with number=page.number total=page.paginator.num_pages %}Page {{ number }} of {{ total }}{% endblocktranslate %}</span>
+        {% if page.has_next %}<a class="btn btn-secondary" href="?status={{ status }}&page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
       </nav>
     {% endif %}
   {% else %}
     <div class="empty">
       <span class="brand-mark">{% include 'plan_app/icon.html' with name='list' %}</span>
-      <h2>No sessions yet</h2>
-      <p>Record a session and it will show up here.</p>
-      <a class="btn" href="{% url 'plan_app:session_record' dog.pk %}">Record session</a>
+      <h2>{% translate "No sessions yet" %}</h2>
+      <p>{% translate "Record a session and it will show up here." %}</p>
+      <a class="btn" href="{% url 'plan_app:session_record' dog.pk %}">{% translate "Record session" %}</a>
     </div>
   {% endif %}
 </div>

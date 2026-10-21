@@ -1,10 +1,11 @@
-{% load static %}<!doctype html>
-<html lang="en">
+{% load static i18n %}<!doctype html>
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#4f46e5">
-  <title>{% block title %}Training Tracker{% endblock %}</title>
+  <title>{% block title %}{% translate "Training Tracker" %}{% endblock %}</title>
   <link rel="manifest" href="{% static 'plan_app/manifest.json' %}">
   <link rel="icon" type="image/png" href="{% static 'plan_app/icons/icon-192.png' %}">
   <link rel="apple-touch-icon" href="{% static 'plan_app/icons/icon-192.png' %}">
@@ -12,7 +13,7 @@
   <link rel="stylesheet" href="{% static 'plan_app/style.css' %}?v={{ asset_version }}">
   <script src="{% static 'plan_app/app.js' %}?v={{ asset_version }}" defer></script>
   <script type="speculationrules">
-    {"prefetch": [{"where": {"and": [{"href_matches": "/*"}, {"not": {"href_matches": ["/admin/*", "/api/*", "/accounts/*", "/sw.js"]}}]}, "eagerness": "moderate"}]}
+    {"prefetch": [{"where": {"and": [{"href_matches": "/*"}, {"not": {"href_matches": ["/admin/*", "/api/*", "/accounts/*", "/i18n/*", "/sw.js"]}}]}, "eagerness": "moderate"}]}
   </script>
 </head>
 <body data-service-worker="{% url 'plan_app:service_worker' %}"{% if not dog.pk %} class="no-tabbar"{% endif %}>
@@ -20,17 +21,26 @@
     <div class="container">
       <a class="brand" href="{% url 'plan_app:dog_list' %}">
         <span class="brand-mark">{% include 'plan_app/icon.html' with name='paw' %}</span>
-        Training Tracker
+        {% translate "Training Tracker" %}
       </a>
       <div class="topbar-actions">
-        <button type="button" class="btn btn-ghost btn-icon" data-theme-toggle aria-label="Toggle dark mode">
+        <form method="post" action="{% url 'set_language' %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          {% if LANGUAGE_CODE == 'mr' %}
+            <button class="btn btn-ghost btn-sm" name="language" value="en" lang="en" title="{% translate 'Language' %}">English</button>
+          {% else %}
+            <button class="btn btn-ghost btn-sm" name="language" value="mr" lang="mr" title="{% translate 'Language' %}">मराठी</button>
+          {% endif %}
+        </form>
+        <button type="button" class="btn btn-ghost btn-icon" data-theme-toggle aria-label="{% translate 'Toggle dark mode' %}">
           {% include 'plan_app/icon.html' with name='moon' %}
         </button>
         {% if user.is_authenticated %}
           <span class="user-chip"><span class="user-name">{{ user.get_username }}</span></span>
           <form method="post" action="{% url 'logout' %}">
             {% csrf_token %}
-            <button class="btn btn-ghost btn-icon" aria-label="Log out" title="Log out">
+            <button class="btn btn-ghost btn-icon" aria-label="{% translate 'Log out' %}" title="{% translate 'Log out' %}">
               {% include 'plan_app/icon.html' with name='logout' %}
             </button>
           </form>
@@ -44,7 +54,7 @@
       {% for message in messages %}
         <div class="alert alert-{{ message.tags }}">
           <p>{{ message }}</p>
-          <button type="button" aria-label="Dismiss">&times;</button>
+          <button type="button" aria-label="{% translate 'Dismiss' %}">&times;</button>
         </div>
       {% endfor %}
     </div>

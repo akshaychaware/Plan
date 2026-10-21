@@ -1,8 +1,10 @@
 from datetime import timedelta
 
 from django.db import transaction
+from django.utils.translation import gettext
 
 from plan_app.core.models import METRICS
+from plan_app.exercise.models import ExerciseType
 from plan_app.training_plan.services import planned_activities_for
 
 from .models import TrainingSession
@@ -11,7 +13,7 @@ Status = TrainingSession.Status
 
 
 def status_label(status):
-    return Status(status).label if status in Status.values else 'Planned'
+    return Status(status).label if status in Status.values else gettext('Planned')
 
 
 def day_entries(dog, day, sessions=None):
@@ -63,6 +65,24 @@ def history_days(sessions, dates):
     return days
 
 
+CALORIE_INPUTS = ('exercise_type_id', 'actual_duration_minutes', 'actual_distance_km')
+
+
+def snapshot_calories(session):
+    """Compute kcal when first recorded; re-done only if the activity, actual metrics change or it leaves Skipped."""
+    if session.status == Status.SKIPPED:
+        session.calories_kcal = None
+        return
+    previous = session.pk and TrainingSession.objects.filter(pk=session.pk).values('status', *CALORIE_INPUTS).first()
+    if (
+        not previous or previous['status'] == Status.SKIPPED
+        or any(previous[field] != getattr(session, field) for field in CALORIE_INPUTS)
+    ):
+        session.calories_kcal = ExerciseType.objects.get(pk=session.exercise_type_id).calories_for(
+            session.actual_duration_minutes, session.actual_distance_km
+        )
+
+
 @transaction.atomic
 def save_session(session, **values):
     for field, value in values.items():
@@ -72,6 +92,7 @@ def save_session(session, **values):
             if f'actual_{metric}' not in values:
                 setattr(session, f'actual_{metric}', None)
     session.full_clean()
+    snapshot_calories(session)
     session.save()
     return session
 

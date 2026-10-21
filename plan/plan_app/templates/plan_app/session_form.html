@@ -1,14 +1,15 @@
 {% extends 'plan_app/base.html' %}
-{% block title %}Training session · {{ dog.name }}{% endblock %}
+{% load i18n %}
+{% block title %}{% translate "Training session" %} · {{ dog.name }}{% endblock %}
 {% block content %}
 <div>
-  <h1>{{ session.pk|yesno:"Edit,Record" }} session</h1>
+  <h1>{% if session.pk %}{% translate "Edit session" %}{% else %}{% translate "Record session" %}{% endif %}</h1>
   <p class="muted m-0">{{ dog.name|capfirst }} · {{ day|date:"l, j F Y" }}</p>
 </div>
 
 {% include 'plan_app/dog_tabs.html' %}
 
-<nav class="chips" aria-label="Activities on {{ day|date:'j F' }}">
+<nav class="chips" aria-label="{% blocktranslate with date=day|date:'j F' %}Activities on {{ date }}{% endblocktranslate %}">
   {% for a in entry.activities %}
     {% firstof a.planned.exercise_type.name a.session.exercise_type.name as name %}
     {% if a.planned %}
@@ -16,11 +17,11 @@
     {% else %}
       <a class="chip act-{{ name|slugify }}" href="{% url 'plan_app:session_edit' dog.pk a.session.pk %}"{% if a.session.pk == session.pk %} aria-current="true"{% endif %}>
     {% endif %}
-        <span class="dot"></span>{{ name }}<span class="mini-status status-{{ a.status|lower }}" title="{{ a.status_label }}"></span>
+        <span class="dot"></span>{% translate name %}<span class="mini-status status-{{ a.status|lower }}" title="{{ a.status_label }}"></span>
       </a>
   {% endfor %}
   <a class="chip" href="{% url 'plan_app:session_record' dog.pk %}?date={{ day|date:'Y-m-d' }}&activity=extra"{% if not session.pk and not session.planned_activity_id %} aria-current="true"{% endif %}>
-    {% include 'plan_app/icon.html' with name='plus' %} Extra activity
+    {% include 'plan_app/icon.html' with name='plus' %} {% translate "Extra activity" %}
   </a>
 </nav>
 
@@ -29,30 +30,30 @@
     {% csrf_token %}
     <div class="form-grid">{{ form }}</div>
     <div class="form-actions">
-      <button class="btn">{% include 'plan_app/icon.html' with name='check' %} Save session</button>
-      <a class="btn btn-secondary" href="{% url 'plan_app:dog_detail' dog.pk %}">Cancel</a>
+      <button class="btn">{% include 'plan_app/icon.html' with name='check' %} {% translate "Save session" %}</button>
+      <a class="btn btn-secondary" href="{% url 'plan_app:dog_detail' dog.pk %}">{% translate "Cancel" %}</a>
     </div>
   </form>
 
   <aside class="stack">
     <div class="card">
-      <div class="card-header"><h2>Planned</h2></div>
+      <div class="card-header"><h2>{% translate "Planned" %}</h2></div>
       <div class="today-activity act-{{ session.planned_exercise_type.name|slugify }} m-0">
         <span class="dot"></span>
         <div>
           <strong>{{ session.planned_summary }}</strong>
           {% if session.planned_activity.notes %}<span class="muted">{{ session.planned_activity.notes }}</span>{% endif %}
-          {% if not session.planned_exercise_type_id %}<span class="muted">An extra activity outside the plan.</span>{% endif %}
+          {% if not session.planned_exercise_type_id %}<span class="muted">{% translate "An extra activity outside the plan." %}</span>{% endif %}
         </div>
       </div>
     </div>
     {% if not session.pk %}
       <form method="get" class="card form-stack">
         <div>
-          <label for="date">Choose another date</label>
+          <label for="date">{% translate "Choose another date" %}</label>
           <input type="date" id="date" name="date" value="{{ day|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}">
         </div>
-        <div class="form-actions"><button class="btn btn-secondary btn-block">{% include 'plan_app/icon.html' with name='calendar' %} Go to date</button></div>
+        <div class="form-actions"><button class="btn btn-secondary btn-block">{% include 'plan_app/icon.html' with name='calendar' %} {% translate "Go to date" %}</button></div>
       </form>
     {% endif %}
   </aside>

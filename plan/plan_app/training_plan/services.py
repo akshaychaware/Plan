@@ -3,6 +3,8 @@ from datetime import timedelta
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Q
+from django.utils.formats import date_format
+from django.utils.translation import gettext
 
 from .models import PlannedActivity, TrainingPlan, TrainingPlanDay, Weekday
 
@@ -79,7 +81,9 @@ def save_week(plan, week):
 def start_new_plan(dog, *, name, start_date):
     current = active_plan(dog)
     if current and start_date <= current.start_date:
-        raise ValidationError({'start_date': f'Must be after the current plan start ({current.start_date}).'})
+        raise ValidationError({'start_date': gettext('Must be after the current plan start (%(date)s).') % {
+            'date': date_format(current.start_date, 'j M Y'),
+        }})
     plan = save_plan(TrainingPlan(dog=dog, name=name, start_date=start_date, is_active=True))
     if current:
         current.end_date = start_date - timedelta(days=1)

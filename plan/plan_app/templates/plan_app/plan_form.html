@@ -1,10 +1,11 @@
 {% extends 'plan_app/base.html' %}
-{% block title %}Training plan · {{ dog.name }}{% endblock %}
+{% load i18n %}
+{% block title %}{% translate "Training plan" %} · {{ dog.name }}{% endblock %}
 {% block content %}
 <div>
-  <h1>Training plan</h1>
+  <h1>{% translate "Training plan" %}</h1>
   <p class="muted m-0">
-    Plan any number of activities per day for {{ dog.name|capfirst }}. Changing the plan never alters recorded sessions.
+    {% blocktranslate with name=dog.name|capfirst %}Plan any number of activities per day for {{ name }}. Changing the plan never alters recorded sessions.{% endblocktranslate %}
   </p>
 </div>
 
@@ -17,8 +18,8 @@
   {% csrf_token %}
   <section class="card">
     <div class="card-header">
-      <h2>{% if plan.pk %}Active plan{% else %}New plan{% endif %}</h2>
-      {% if plan.pk %}<span class="badge badge-completed">Active</span>{% endif %}
+      <h2>{% if plan.pk %}{% translate "Active plan" %}{% else %}{% translate "New plan" %}{% endif %}</h2>
+      {% if plan.pk %}<span class="badge badge-completed">{% translate "Active" %}</span>{% endif %}
     </div>
     <div class="form-grid form-grid-3">{{ plan_form }}</div>
   </section>
@@ -29,7 +30,7 @@
         <div class="card-header">
           <h2>{{ formset.instance.get_day_of_week_display }}</h2>
           <button type="button" class="btn btn-secondary btn-sm" data-add-activity="{{ formset.prefix }}">
-            {% include 'plan_app/icon.html' with name='plus' %} Add activity
+            {% include 'plan_app/icon.html' with name='plus' %} {% translate "Add activity" %}
           </button>
         </div>
         {{ formset.management_form }}
@@ -37,15 +38,15 @@
         <div class="activity-forms" id="{{ formset.prefix }}-forms">
           {% for form in formset.forms %}{% include 'plan_app/planned_activity_form.html' %}{% endfor %}
         </div>
-        <p class="muted empty-hint">Nothing planned. Add an activity (use “Rest” for planned recovery).</p>
+        <p class="muted empty-hint">{% translate "Nothing planned. Add an activity (use “Rest” for planned recovery)." %}</p>
         <template id="{{ formset.prefix }}-template">{% include 'plan_app/planned_activity_form.html' with form=formset.empty_form %}</template>
       </section>
     {% endfor %}
   </div>
 
   <div class="form-actions">
-    <button class="btn">{% include 'plan_app/icon.html' with name='check' %} Save plan</button>
-    <a class="btn btn-secondary" href="{% url 'plan_app:dog_detail' dog.pk %}">Cancel</a>
+    <button class="btn">{% include 'plan_app/icon.html' with name='check' %} {% translate "Save plan" %}</button>
+    <a class="btn btn-secondary" href="{% url 'plan_app:dog_detail' dog.pk %}">{% translate "Cancel" %}</a>
   </div>
 </form>
 
@@ -53,14 +54,13 @@
   <form method="post" action="{% url 'plan_app:plan_new' dog.pk %}" class="card">
     {% csrf_token %}
     <div class="card-header">
-      <h2>Start a new plan version</h2>
+      <h2>{% translate "Start a new plan version" %}</h2>
     </div>
     <p class="muted mt-0">
-      Copies the current week into a new plan starting on the chosen date and ends the current plan the day before.
-      Use this when the routine changes for a new period.
+      {% translate "Copies the current week into a new plan starting on the chosen date and ends the current plan the day before. Use this when the routine changes for a new period." %}
     </p>
     <div class="form-grid">{{ new_plan_form }}</div>
-    <div class="form-actions"><button class="btn btn-secondary">Start new version</button></div>
+    <div class="form-actions"><button class="btn btn-secondary">{% translate "Start new version" %}</button></div>
   </form>
 {% endif %}
 {% endif %}

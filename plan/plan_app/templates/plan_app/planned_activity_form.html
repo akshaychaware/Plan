@@ -1,27 +1,27 @@
-<div class="activity-form" data-duration-scope>
+{% load i18n %}<div class="activity-form" data-duration-scope>
   {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
   {{ form.non_field_errors }}
   <div class="activity-grid">
     <div class="span-2">
-      <label for="{{ form.exercise_type.id_for_label }}">Activity</label>
+      <label for="{{ form.exercise_type.id_for_label }}">{% translate "Activity" %}</label>
       {{ form.exercise_type.errors }}{{ form.exercise_type }}
     </div>
     <div>
-      <label for="{{ form.planned_duration_minutes.id_for_label }}">Minutes</label>
+      <label for="{{ form.planned_duration_minutes.id_for_label }}">{% translate "Minutes" %}</label>
       {{ form.planned_duration_minutes.errors }}{{ form.planned_duration_minutes }}
     </div>
     <div>
-      <label for="{{ form.planned_distance_km.id_for_label }}">Km</label>
+      <label for="{{ form.planned_distance_km.id_for_label }}">{% translate "Km" %}</label>
       {{ form.planned_distance_km.errors }}{{ form.planned_distance_km }}
     </div>
     <div>
-      <label for="{{ form.planned_repetitions.id_for_label }}">Reps</label>
+      <label for="{{ form.planned_repetitions.id_for_label }}">{% translate "Reps" %}</label>
       {{ form.planned_repetitions.errors }}{{ form.planned_repetitions }}
     </div>
     <div class="span-notes">
-      <label for="{{ form.notes.id_for_label }}">Notes</label>
+      <label for="{{ form.notes.id_for_label }}">{% translate "Notes" %}</label>
       {{ form.notes.errors }}{{ form.notes }}
     </div>
-    <label class="remove-toggle" title="Remove this activity">{{ form.DELETE }}<span>Remove</span></label>
+    <label class="remove-toggle" title="{% translate 'Remove this activity' %}">{{ form.DELETE }}<span>{% translate "Remove" %}</span></label>
   </div>
 </div>

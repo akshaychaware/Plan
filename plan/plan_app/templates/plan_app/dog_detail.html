@@ -1,8 +1,9 @@
 {% extends 'plan_app/base.html' %}
-{% block title %}{{ dog.name }} · Training Tracker{% endblock %}
+{% load i18n %}
+{% block title %}{{ dog.name }} · {% translate "Training Tracker" %}{% endblock %}
 {% block content %}
 <a class="back-link" href="{% url 'plan_app:dog_list' %}">
-  {% include 'plan_app/icon.html' with name='arrow-left' %} All dogs
+  {% include 'plan_app/icon.html' with name='arrow-left' %} {% translate "All dogs" %}
 </a>
 
 <section class="hero">
@@ -12,21 +13,21 @@
       <div>
         <h1>{{ dog.name|capfirst }}</h1>
         <p class="muted m-0">
-          {{ dog.breed }}{% if dog.date_of_birth %} · {{ dog.date_of_birth|timesince:today }} old{% endif %}{% if dog.weight_kg %} · {{ dog.weight_kg|floatformat:"-3" }} kg{% endif %}
+          {{ dog.breed }}{% if dog.date_of_birth %} · {% blocktranslate with age=dog.date_of_birth|timesince:today %}{{ age }} old{% endblocktranslate %}{% endif %}{% if dog.weight_kg %} · {{ dog.weight_kg|floatformat:"-3" }} kg{% endif %}
         </p>
       </div>
     </div>
     <div class="row">
       <a class="btn btn-secondary" href="{% url 'plan_app:session_record' dog.pk %}">
-        {% include 'plan_app/icon.html' with name='plus' %} Record session
+        {% include 'plan_app/icon.html' with name='plus' %} {% translate "Record session" %}
       </a>
-      <a class="btn btn-ghost hero-ghost" href="{% url 'plan_app:dog_edit' dog.pk %}">Edit profile</a>
+      <a class="btn btn-ghost hero-ghost" href="{% url 'plan_app:dog_edit' dog.pk %}">{% translate "Edit profile" %}</a>
     </div>
   </div>
   <div class="hero-pills">
-    <span class="hero-pill">{% include 'plan_app/icon.html' with name='flame' %} {{ stats.streak }}-day streak</span>
-    <span class="hero-pill">{% include 'plan_app/icon.html' with name='check' %} {{ progress.done }}/{{ progress.target }} training activities this week</span>
-    {% if plan %}<span class="hero-pill">{% include 'plan_app/icon.html' with name='calendar' %} {{ plan.name }} · since {{ plan.start_date|date:"j M" }}</span>{% endif %}
+    <span class="hero-pill">{% include 'plan_app/icon.html' with name='flame' %} {% blocktranslate with days=stats.streak %}{{ days }}-day streak{% endblocktranslate %}</span>
+    <span class="hero-pill">{% include 'plan_app/icon.html' with name='check' %} {% blocktranslate with done=progress.done target=progress.target %}{{ done }}/{{ target }} training activities this week{% endblocktranslate %}</span>
+    {% if plan %}<span class="hero-pill">{% include 'plan_app/icon.html' with name='calendar' %} {% blocktranslate with name=plan.name date=plan.start_date|date:"j M" %}{{ name }} · since {{ date }}{% endblocktranslate %}</span>{% endif %}
   </div>
 </section>
 
@@ -35,7 +36,7 @@
 <div class="grid grid-2">
   <section class="card">
     <div class="card-header">
-      <h2>Today’s training</h2>
+      <h2>{% translate "Today’s training" %}</h2>
       <span class="muted">{{ today|date:"l, j F" }}</span>
     </div>
     <div class="activity-list">
@@ -43,26 +44,42 @@
         {% include 'plan_app/activity_row.html' with day=today %}
       {% empty %}
         <p class="muted m-0">
-          No training planned today.
-          {% if not plan and is_admin %}<a href="{% url 'plan_app:plan_edit' dog.pk %}">Create a training plan</a>.{% endif %}
+          {% translate "No training planned today." %}
+          {% if not plan and is_admin %}<a href="{% url 'plan_app:plan_edit' dog.pk %}">{% translate "Create a training plan" %}</a>.{% endif %}
         </p>
       {% endfor %}
     </div>
     <a class="add-link" href="{% url 'plan_app:session_record' dog.pk %}?date={{ today|date:'Y-m-d' }}&activity=extra">
-      {% include 'plan_app/icon.html' with name='plus' %} Add an extra activity
+      {% include 'plan_app/icon.html' with name='plus' %} {% translate "Add an extra activity" %}
     </a>
   </section>
 
   <div class="stack">
-    {% include 'plan_app/progress_card.html' with title='Weekly progress' %}
-    {% include 'plan_app/progress_card.html' with title='Monthly progress' progress=month_progress %}
+    {% translate "Weekly progress" as weekly_title %}
+    {% translate "Monthly progress" as monthly_title %}
+    {% include 'plan_app/progress_card.html' with title=weekly_title %}
+    {% if calorie_goal %}
+      <section class="card">
+        <div class="card-header"><h2>{% translate "Weekly calorie goal" %}</h2></div>
+        <div class="progress-wrap">
+          <div class="ring" style="--value: {{ calorie_goal.percent }}" data-progress="{{ calorie_goal.percent }}" role="img" aria-label="{% blocktranslate with percent=calorie_goal.percent %}{{ percent }}% of the weekly calorie goal{% endblocktranslate %}">
+            <span>{{ calorie_goal.percent }}%</span>
+          </div>
+          <div>
+            <p class="mt-0">{% blocktranslate with calories=calorie_goal.calories|floatformat:"-1" goal=calorie_goal.goal %}<strong>{{ calories }} of {{ goal }} kcal</strong> burned this week.{% endblocktranslate %}</p>
+            <p class="muted m-0">{% if calorie_goal.remaining %}{% blocktranslate with remaining=calorie_goal.remaining|floatformat:"-1" %}{{ remaining }} kcal to go.{% endblocktranslate %}{% else %}{% translate "Goal reached!" %}{% endif %}</p>
+          </div>
+        </div>
+      </section>
+    {% endif %}
+    {% include 'plan_app/progress_card.html' with title=monthly_title progress=month_progress %}
   </div>
 </div>
 
 <section class="card">
   <div class="card-header">
-    <h2>This week</h2>
-    <a href="{% url 'plan_app:plan_edit' dog.pk %}">{{ is_admin|yesno:"Edit plan,View plan" }}</a>
+    <h2>{% translate "This week" %}</h2>
+    <a href="{% url 'plan_app:plan_edit' dog.pk %}">{% if is_admin %}{% translate "Edit plan" %}{% else %}{% translate "View plan" %}{% endif %}</a>
   </div>
   <div class="week">
     {% for entry in week %}
@@ -85,7 +102,7 @@
                 <span class="mini-status status-{{ a.status|lower }}{% if a.status == 'PLANNED' and entry.date < today %} status-missed{% endif %}" title="{{ a.status_label }}"></span>
               </li>
             {% empty %}
-              <li class="muted">No plan</li>
+              <li class="muted">{% translate "No plan" %}</li>
             {% endfor %}
           </ul>
       {% if entry.date <= today %}</a>{% else %}</div>{% endif %}
@@ -93,43 +110,70 @@
     {% endfor %}
   </div>
   <p class="legend muted">
-    <span class="mini-status status-completed"></span> Completed
-    <span class="mini-status status-partially_completed"></span> Partial
-    <span class="mini-status status-skipped"></span> Skipped
-    <span class="mini-status status-planned"></span> Planned
+    <span class="mini-status status-completed"></span> {% translate "Completed" %}
+    <span class="mini-status status-partially_completed"></span> {% translate "Partial" %}
+    <span class="mini-status status-skipped"></span> {% translate "Skipped" %}
+    <span class="mini-status status-planned"></span> {% translate "Planned" %}
   </p>
 </section>
 
 <section class="card">
+  <div class="card-header"><h2>{% translate "Personal records" %}</h2></div>
+  <div class="stats">
+    {% with best=records.longest_distance %}
+      <div class="stat tone-accent">
+        <span class="stat-value">{% if best %}{{ best.actual_distance_km|floatformat:"-2" }} km{% else %}—{% endif %}</span>
+        <span class="stat-label">{% translate "Longest distance" %}</span>
+        {% if best %}<span class="stat-note muted">{{ best.exercise_type }} · {{ best.date|date:"j M Y" }}</span>{% endif %}
+      </div>
+    {% endwith %}
+    {% with best=records.best_week %}
+      <div class="stat tone-warning">
+        <span class="stat-value">{% if best %}{{ best.calories_kcal|floatformat:"-1" }} kcal{% else %}—{% endif %}</span>
+        <span class="stat-label">{% translate "Best week" %}</span>
+        {% if best %}<span class="stat-note muted">{% blocktranslate with date=best.start|date:"j M Y" %}Week of {{ date }}{% endblocktranslate %}</span>{% endif %}
+      </div>
+    {% endwith %}
+    {% with best=records.longest_streak %}
+      <div class="stat tone-primary">
+        <span class="stat-value">{% if best %}{% blocktranslate count days=best.days %}{{ days }} day{% plural %}{{ days }} days{% endblocktranslate %}{% else %}—{% endif %}</span>
+        <span class="stat-label">{% translate "Longest streak" %}</span>
+        {% if best %}<span class="stat-note muted">{{ best.start|date:"j M" }} – {{ best.end|date:"j M Y" }}</span>{% endif %}
+      </div>
+    {% endwith %}
+  </div>
+</section>
+
+<section class="card">
   <div class="card-header">
-    <h2>Statistics</h2>
-    <nav class="segmented" aria-label="Statistics period">
+    <h2>{% translate "Statistics" %}</h2>
+    <nav class="segmented" aria-label="{% translate 'Statistics period' %}">
       {% for key, label in periods.items %}
         <a href="?period={{ key }}"{% if key == period %} aria-current="true"{% endif %}>{{ label }}</a>
       {% endfor %}
     </nav>
   </div>
   <div class="stats">
-    <div class="stat tone-primary"><span class="stat-value">{{ stats.training_days }}</span><span class="stat-label">Training days</span></div>
-    <div class="stat"><span class="stat-value">{{ stats.rest_days }}</span><span class="stat-label">Rest days</span></div>
-    <div class="stat tone-success"><span class="stat-value">{{ stats.completed }}</span><span class="stat-label">Completed</span></div>
-    <div class="stat tone-warning"><span class="stat-value">{{ stats.partially_completed }}</span><span class="stat-label">Partial</span></div>
-    <div class="stat tone-danger"><span class="stat-value">{{ stats.skipped }}</span><span class="stat-label">Skipped</span></div>
-    <div class="stat tone-primary"><span class="stat-value">{{ stats.completion_rate }}%</span><span class="stat-label">Completion</span></div>
-    <div class="stat tone-accent"><span class="stat-value">{{ stats.total_minutes|default:0 }}</span><span class="stat-label">Minutes</span></div>
-    <div class="stat tone-accent"><span class="stat-value">{{ stats.total_distance_km|default:0|floatformat:"-2" }}</span><span class="stat-label">Kilometres</span></div>
+    <div class="stat tone-primary"><span class="stat-value">{{ stats.training_days }}</span><span class="stat-label">{% translate "Training days" %}</span></div>
+    <div class="stat"><span class="stat-value">{{ stats.rest_days }}</span><span class="stat-label">{% translate "Rest days" %}</span></div>
+    <div class="stat tone-success"><span class="stat-value">{{ stats.completed }}</span><span class="stat-label">{% translate "Completed" %}</span></div>
+    <div class="stat tone-warning"><span class="stat-value">{{ stats.partially_completed }}</span><span class="stat-label">{% translate "Partial" %}</span></div>
+    <div class="stat tone-danger"><span class="stat-value">{{ stats.skipped }}</span><span class="stat-label">{% translate "Skipped" %}</span></div>
+    <div class="stat tone-primary"><span class="stat-value">{{ stats.completion_rate }}%</span><span class="stat-label">{% translate "Completion" %}</span></div>
+    <div class="stat tone-accent"><span class="stat-value">{{ stats.total_minutes|default:0 }}</span><span class="stat-label">{% translate "Minutes" %}</span></div>
+    <div class="stat tone-accent"><span class="stat-value">{{ stats.total_distance_km|default:0|floatformat:"-2" }}</span><span class="stat-label">{% translate "Kilometres" %}</span></div>
     <div class="stat tone-warning"><span class="stat-value">{{ stats.total_calories_kcal|default:0|floatformat:"-1" }}</span><span class="stat-label">kcal</span></div>
   </div>
   {% if stats.by_exercise %}
-    <h2 class="section-title">Activity breakdown</h2>
+    <h2 class="section-title">{% translate "Activity breakdown" %}</h2>
     <div class="bars">
       {% for row in stats.by_exercise %}
         <div class="act-{{ row.exercise|slugify }}">
           <div class="bar-label">
-            <span class="inline-dot"><span class="dot"></span><strong>{{ row.exercise }}</strong></span>
+            <span class="inline-dot"><span class="dot"></span><strong>{% translate row.exercise %}</strong></span>
             <span class="muted">
-              {{ row.sessions }} session{{ row.sessions|pluralize }}
-              {% if row.total_minutes %} · {{ row.total_minutes }} min (avg {{ row.average_minutes|floatformat:"-1" }}){% endif %}
+              {% blocktranslate count sessions=row.sessions %}{{ sessions }} session{% plural %}{{ sessions }} sessions{% endblocktranslate %}
+              {% if row.total_minutes %} · {% blocktranslate with minutes=row.total_minutes average=row.average_minutes|floatformat:"-1" %}{{ minutes }} min (avg {{ average }}){% endblocktranslate %}{% endif %}
               {% if row.total_distance_km %} · {{ row.total_distance_km|floatformat:"-2" }} km{% endif %}
               {% if row.total_calories_kcal %} · {{ row.total_calories_kcal|floatformat:"-1" }} kcal{% endif %}
             </span>
@@ -139,7 +183,21 @@
       {% endfor %}
     </div>
   {% else %}
-    <p class="muted">No sessions recorded for this period yet.</p>
+    <p class="muted">{% translate "No sessions recorded for this period yet." %}</p>
   {% endif %}
 </section>
+
+{% if weigh_in.due %}
+  <dialog class="modal card" data-weigh-in-reminder="{{ dog.pk }}" aria-labelledby="weigh-in-title">
+    <h2 id="weigh-in-title" class="mt-0">{% blocktranslate with name=dog.name|capfirst %}Time to weigh {{ name }}{% endblocktranslate %}</h2>
+    <p class="muted">
+      {% if weigh_in.last %}{% blocktranslate with weight=weigh_in.last.weight_kg|floatformat:"-3" date=weigh_in.last.date|date:"j M Y" ago=weigh_in.last.date|timesince:today %}The last weigh-in was {{ weight }} kg on {{ date }}, {{ ago }} ago.{% endblocktranslate %}{% else %}{% blocktranslate with name=dog.name|capfirst %}{{ name }} has no weigh-ins yet.{% endblocktranslate %}{% endif %}
+      {% translate "Weigh every 15 days to track progress." %}
+    </p>
+    <form method="dialog" class="form-actions">
+      <a class="btn" href="{% url 'plan_app:weight_log' dog.pk %}">{% translate "Record weight" %}</a>
+      <button class="btn btn-secondary" type="submit">{% translate "Later" %}</button>
+    </form>
+  </dialog>
+{% endif %}
 {% endblock %}

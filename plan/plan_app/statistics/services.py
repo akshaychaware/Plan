@@ -2,11 +2,12 @@ from datetime import timedelta
 
 from django.db.models import Avg, Count, F, Q, Sum
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from plan_app.training_session.models import TrainingSession
 
 Status = TrainingSession.Status
-PERIODS = {'week': 'This week', 'month': 'This month', 'all': 'All time'}
+PERIODS = {'week': _('This week'), 'month': _('This month'), 'all': _('All time')}
 
 
 def period_start(period, today):
@@ -36,6 +37,37 @@ def current_streak(dog, today):
     return streak
 
 
+def longest_streak(dates):
+    """Longest run of consecutive days in sorted, distinct `dates` as {'days', 'start', 'end'}, or None."""
+    best, start, previous = None, None, None
+    for day in dates:
+        if previous is None or day - previous != timedelta(days=1):
+            start = day
+        days = (day - start).days + 1
+        if best is None or days > best['days']:
+            best = {'days': days, 'start': start, 'end': day}
+        previous = day
+    return best
+
+
+def personal_records(dog, today):
+    done = dog.sessions.exclude(status=Status.SKIPPED).filter(date__lte=today)
+    longest = (
+        done.filter(actual_distance_km__gt=0).select_related('exercise_type')
+        .order_by('-actual_distance_km', 'date').first()
+    )
+    weekly = {}
+    for day, kcal in done.filter(calories_kcal__gt=0).order_by('date').values_list('date', 'calories_kcal'):
+        monday = day - timedelta(days=day.weekday())
+        weekly[monday] = weekly.get(monday, 0) + kcal
+    best_week = max(weekly.items(), key=lambda week: week[1], default=None)
+    return {
+        'longest_distance': longest,
+        'best_week': best_week and {'start': best_week[0], 'calories_kcal': best_week[1]},
+        'longest_streak': longest_streak(done.order_by('date').values_list('date', flat=True).distinct()),
+    }
+
+
 def summarize(dog, period='all', today=None):
     today = today or timezone.localdate()
     start = period_start(period, today)
@@ -50,7 +82,7 @@ def summarize(dog, period='all', today=None):
         skipped=Count('id', filter=Q(status=Status.SKIPPED)),
         total_minutes=Sum('actual_duration_minutes'),
         total_distance_km=Sum('actual_distance_km'),
-        total_calories_kcal=Sum('exercise_type__average_calories_kcal', filter=~Q(status=Status.SKIPPED)),
+        total_calories_kcal=Sum('calories_kcal'),
     )
     distinct_days = sessions.order_by().values('date').distinct()
     by_exercise = list(
@@ -61,7 +93,7 @@ def summarize(dog, period='all', today=None):
             total_minutes=Sum('actual_duration_minutes'),
             average_minutes=Avg('actual_duration_minutes'),
             total_distance_km=Sum('actual_distance_km'),
-            total_calories_kcal=Sum('exercise_type__average_calories_kcal'),
+            total_calories_kcal=Sum('calories_kcal'),
         )
         .order_by('-sessions', 'exercise')
     )
@@ -87,14 +119,21 @@ def week_progress(week):
         if a['planned'] and a['planned'].exercise_type.tracks_metrics
     ]
     done = sum(1 for a in training if a['session'] and a['session'].status != Status.SKIPPED)
-    calories = sum(
-        a['session'].exercise_type.average_calories_kcal or 0
-        for entry in week for a in entry['activities']
-        if a['session'] and a['session'].status != Status.SKIPPED
-    )
+    calories = sum(a['session'].calories_kcal or 0 for entry in week for a in entry['activities'] if a['session'])
     return {
         'done': done,
         'target': len(training),
         'percent': round(100 * done / len(training)) if training else 0,
         'calories': calories,
+    }
+
+
+def calorie_goal_progress(calories, goal):
+    if not goal:
+        return None
+    return {
+        'calories': calories,
+        'goal': goal,
+        'remaining': max(0, goal - calories),
+        'percent': min(100, round(100 * calories / goal)),
     }

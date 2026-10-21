@@ -1,11 +1,12 @@
 {% extends 'plan_app/base.html' %}
+{% load i18n %}
 {% block content %}
 <div class="row spread">
   <div>
-    <h1>Dogs</h1>
-    <p class="muted m-0">Pick a dog to see today’s training, the week and progress.</p>
+    <h1>{% translate "Dogs" %}</h1>
+    <p class="muted m-0">{% translate "Pick a dog to see today’s training, the week and progress." %}</p>
   </div>
-  <a class="btn" href="{% url 'plan_app:dog_create' %}">{% include 'plan_app/icon.html' with name='plus' %} Add dog</a>
+  <a class="btn" href="{% url 'plan_app:dog_create' %}">{% include 'plan_app/icon.html' with name='plus' %} {% translate "Add dog" %}</a>
 </div>
 
 {% if dogs %}
@@ -24,9 +25,9 @@
 {% else %}
   <div class="card empty">
     <span class="brand-mark">{% include 'plan_app/icon.html' with name='paw' %}</span>
-    <h2>No dogs yet</h2>
-    <p>Add your first dog to start planning training.</p>
-    <a class="btn" href="{% url 'plan_app:dog_create' %}">Add your first dog</a>
+    <h2>{% translate "No dogs yet" %}</h2>
+    <p>{% translate "Add your first dog to start planning training." %}</p>
+    <a class="btn" href="{% url 'plan_app:dog_create' %}">{% translate "Add your first dog" %}</a>
   </div>
 {% endif %}
 {% endblock %}

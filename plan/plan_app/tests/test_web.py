@@ -43,6 +43,40 @@ class WebTests(TrackerTestCase):
         session.refresh_from_db()
         self.assertEqual(session.status, 'PARTIALLY_COMPLETED')
 
+    def test_weight_log_and_weigh_in_reminder(self):
+        self.client.force_login(self.other_user)
+        self.assertContains(self.client.get(self.url('dog_detail')), 'data-weigh-in-reminder')
+        response = self.client.post(self.url('weight_log'), {'date': f'{self.today:%Y-%m-%d}', 'weight_kg': '25.2'})
+        self.assertRedirects(response, self.url('weight_log'))
+        self.assertContains(self.client.get(self.url('weight_log')), '25.200 kg')
+        self.assertNotContains(self.client.get(self.url('dog_detail')), 'data-weigh-in-reminder')
+        self.dog.refresh_from_db()
+        self.assertEqual(self.dog.weight_kg, Decimal('25.2'))
+
+    def test_marathi_language_switch(self):
+        response = self.client.post(reverse('set_language'), {'language': 'mr', 'next': self.url('dog_detail')})
+        self.assertRedirects(response, self.url('dog_detail'))
+        self.client.post(self.url('session_quick_log', self.swim.pk))
+        page = self.client.get(self.url('dog_detail'))
+        for text in ('<html lang="mr">', 'डॅशबोर्ड', 'आजचे प्रशिक्षण', 'पोहणे — 20 min', 'पूर्ण', 'English'):
+            self.assertContains(page, text)
+        self.assertContains(page, 'act-swimming')
+        edit_page = self.client.get(self.url('dog_edit'))
+        self.assertContains(edit_page, 'जन्मतारीख')
+        self.assertContains(edit_page, '<title>Luna संपादित करा')
+        dog_list = self.client.get(reverse('plan_app:dog_list'))
+        self.assertContains(dog_list, 'श्वान जोडा')
+        self.assertNotContains(dog_list, 'कुत्र')
+        self.assertContains(self.client.get(self.url('session_history')), 'प्रशिक्षण इतिहास')
+        self.assertContains(self.client.get(self.url('session_edit', self.dog.sessions.get().pk)), 'स्थिती')
+
+        self.client.post(reverse('set_language'), {'language': 'en', 'next': '/'})
+        self.assertContains(self.client.get(self.url('dog_detail')), 'Today’s training')
+
+        self.client.logout()
+        self.client.cookies['django_language'] = 'mr'
+        self.assertContains(self.client.get(reverse('login')), 'पुन्हा स्वागत आहे')
+
     def test_dashboard_shows_todays_activities(self):
         response = self.client.get(self.url('dog_detail'), {'period': 'month'})
         self.assertContains(response, 'Swimming — 20 min')
@@ -103,7 +137,10 @@ class WebTests(TrackerTestCase):
         self.assertEqual(plan.days.count(), 7)
 
     def test_dog_profile_edit_and_history(self):
-        self.client.post(self.url('dog_edit'), {'name': 'Luna', 'breed': 'Greyhound', 'weight_kg': '25.400'})
+        self.assertIsNone(self.client.get(self.url('dog_detail')).context['calorie_goal'])
+        self.client.post(self.url('dog_edit'), {
+            'name': 'Luna', 'breed': 'Greyhound', 'weight_kg': '25.400', 'weekly_calorie_goal_kcal': '100',
+        })
         self.dog.refresh_from_db()
         self.assertEqual(str(self.dog.weight_kg), '25.400')
         self.client.post(self.url('session_quick_log', self.swim.pk))
@@ -113,6 +150,9 @@ class WebTests(TrackerTestCase):
         self.client.post(self.url('session_quick_log', self.walk.pk))
         days = self.client.get(self.url('session_history')).context['days']
         self.assertEqual([(len(d['sessions']), d['calories_kcal']) for d in days], [(2, Decimal('97.5'))])
+        response = self.client.get(self.url('dog_detail'))
+        self.assertContains(response, 'Weekly calorie goal')
+        self.assertEqual(response.context['calorie_goal']['remaining'], Decimal('2.5'))
 
     def test_pwa_endpoints(self):
         self.client.logout()

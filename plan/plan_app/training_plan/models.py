@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.translation import gettext, gettext_lazy as _
 
 from plan_app.core.models import (
     TimeStampedModel, describe_activity, distance_field, duration_field, reject_metrics, repetitions_field,
@@ -9,20 +10,20 @@ from plan_app.exercise.models import ExerciseType
 
 
 class Weekday(models.IntegerChoices):
-    MONDAY = 0, 'Monday'
-    TUESDAY = 1, 'Tuesday'
-    WEDNESDAY = 2, 'Wednesday'
-    THURSDAY = 3, 'Thursday'
-    FRIDAY = 4, 'Friday'
-    SATURDAY = 5, 'Saturday'
-    SUNDAY = 6, 'Sunday'
+    MONDAY = 0, _('Monday')
+    TUESDAY = 1, _('Tuesday')
+    WEDNESDAY = 2, _('Wednesday')
+    THURSDAY = 3, _('Thursday')
+    FRIDAY = 4, _('Friday')
+    SATURDAY = 5, _('Saturday')
+    SUNDAY = 6, _('Sunday')
 
 
 class TrainingPlan(TimeStampedModel):
     dog = models.ForeignKey(Dog, on_delete=models.CASCADE, related_name='training_plans')
-    name = models.CharField(max_length=100, default='Weekly plan')
-    start_date = models.DateField()
-    end_date = models.DateField(null=True, blank=True)
+    name = models.CharField(_('name'), max_length=100, default='Weekly plan')
+    start_date = models.DateField(_('start date'))
+    end_date = models.DateField(_('end date'), null=True, blank=True)
     is_active = models.BooleanField(default=True)
 
     class Meta:
@@ -35,7 +36,7 @@ class TrainingPlan(TimeStampedModel):
 
     def clean(self):
         if self.start_date and self.end_date and self.end_date < self.start_date:
-            raise ValidationError({'end_date': 'End date must be on or after the start date.'})
+            raise ValidationError({'end_date': gettext('End date must be on or after the start date.')})
 
 
 class TrainingPlanDay(models.Model):
@@ -55,12 +56,12 @@ class TrainingPlanDay(models.Model):
 
 class PlannedActivity(models.Model):
     training_plan_day = models.ForeignKey(TrainingPlanDay, on_delete=models.CASCADE, related_name='activities')
-    exercise_type = models.ForeignKey(ExerciseType, on_delete=models.PROTECT, verbose_name='activity')
+    exercise_type = models.ForeignKey(ExerciseType, on_delete=models.PROTECT, verbose_name=_('activity'))
     sequence = models.PositiveSmallIntegerField(default=0)
-    planned_duration_minutes = duration_field('planned duration (min)')
-    planned_distance_km = distance_field('planned distance (km)')
-    planned_repetitions = repetitions_field('planned repetitions')
-    notes = models.CharField(max_length=200, blank=True)
+    planned_duration_minutes = duration_field(_('planned duration (min)'))
+    planned_distance_km = distance_field(_('planned distance (km)'))
+    planned_repetitions = repetitions_field(_('planned repetitions'))
+    notes = models.CharField(_('notes'), max_length=200, blank=True)
 
     class Meta:
         db_table = 'planned_activities'
@@ -79,7 +80,8 @@ class PlannedActivity(models.Model):
     def clean(self):
         if self.exercise_type_id and not self.exercise_type.tracks_metrics:
             reject_metrics(
-                f'{self.exercise_type} does not track duration, distance or repetitions.',
+                gettext('%(activity)s does not track duration, distance or repetitions.')
+                % {'activity': self.exercise_type},
                 planned_duration_minutes=self.planned_duration_minutes,
                 planned_distance_km=self.planned_distance_km,
                 planned_repetitions=self.planned_repetitions,

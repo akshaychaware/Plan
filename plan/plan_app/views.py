@@ -7,12 +7,17 @@ from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.formats import date_format
+from django.utils.translation import gettext as _
 from django.views.decorators.http import require_http_methods, require_POST
 
 from .core.access import require_admin
-from .forms import DogForm, NewTrainingPlanForm, PlannedActivityFormSet, TrainingPlanForm, TrainingSessionForm
+from .dog import services as dog_services
+from .forms import (
+    DogForm, NewTrainingPlanForm, PlannedActivityFormSet, TrainingPlanForm, TrainingSessionForm, WeightEntryForm,
+)
 from .models import Dog, TrainingPlan, TrainingSession, TrainingPlanDay, Weekday
-from .statistics.services import PERIODS, summarize, week_progress
+from .statistics.services import PERIODS, calorie_goal_progress, personal_records, summarize, week_progress
 from .training_plan import services as plan_services
 from .training_session import services as session_services
 
@@ -34,9 +39,9 @@ def dog_form(request, pk=None):
     if request.method == 'POST' and form.is_valid():
         form.save()
         if pk:
-            messages.success(request, f'{dog} updated.')
+            messages.success(request, _('%(dog)s updated.') % {'dog': dog})
             return redirect('plan_app:dog_detail', pk=dog.pk)
-        messages.success(request, f'{dog} added. Now configure the weekly plan.')
+        messages.success(request, _('%(dog)s added. Now configure the weekly plan.') % {'dog': dog})
         return redirect('plan_app:plan_edit', pk=dog.pk)
     return render(request, 'plan_app/dog_form.html', {'form': form, 'dog': dog if pk else None})
 
@@ -48,17 +53,41 @@ def dog_detail(request, pk):
     period = request.GET.get('period', 'week')
     period = period if period in PERIODS else 'week'
     week = session_services.week_overview(dog, today)
+    progress = week_progress(week)
     return render(request, 'plan_app/dog_detail.html', {
         'dog': dog,
         'today': today,
         'today_entry': week[today.weekday()],
         'week': week,
-        'progress': week_progress(week),
+        'progress': progress,
+        'calorie_goal': calorie_goal_progress(progress['calories'], dog.weekly_calorie_goal_kcal),
         'month_progress': week_progress(session_services.month_overview(dog, today)),
         'stats': summarize(dog, period, today),
+        'records': personal_records(dog, today),
+        'weigh_in': dog_services.weigh_in_status(dog, today),
         'period': period,
         'periods': PERIODS,
         'plan': plan_services.active_plan(dog),
+    })
+
+
+@login_required
+@require_http_methods(['GET', 'POST'])
+def weight_log(request, pk):
+    dog = _get_dog(request, pk)
+    today = timezone.localdate()
+    form = WeightEntryForm(request.POST or None, initial={'date': today})
+    if request.method == 'POST' and form.is_valid():
+        dog_services.record_weight(dog, **form.cleaned_data)
+        messages.success(request, _('Weight for %(dog)s on %(date)s saved.') % {
+            'dog': dog, 'date': date_format(form.cleaned_data['date'], 'j M Y'),
+        })
+        return redirect('plan_app:weight_log', pk=dog.pk)
+    return render(request, 'plan_app/weight_log.html', {
+        'dog': dog,
+        'form': form,
+        'log': dog_services.weight_log(dog, today),
+        'weigh_in': dog_services.weigh_in_status(dog, today),
     })
 
 
@@ -69,9 +98,9 @@ def session_quick_log(request, pk, activity_pk):
     today = timezone.localdate()
     planned = plan_services.planned_activities_for(dog, today).filter(pk=activity_pk).first()
     if planned is None or session_services.complete_as_planned(dog, planned, today) is None:
-        messages.info(request, 'Nothing to quick-log for that activity.')
+        messages.info(request, _('Nothing to quick-log for that activity.'))
     else:
-        messages.success(request, f'{planned.exercise_type} logged as completed.')
+        messages.success(request, _('%(activity)s logged as completed.') % {'activity': planned.exercise_type})
     return redirect('plan_app:dog_detail', pk=dog.pk)
 
 
@@ -102,7 +131,7 @@ def plan_edit(request, pk):
             ]
             for formset in formsets
         })
-        messages.success(request, 'Weekly plan saved.')
+        messages.success(request, _('Weekly plan saved.'))
         return redirect('plan_app:dog_detail', pk=dog.pk)
     return render(request, 'plan_app/plan_form.html', {
         'dog': dog, 'plan': plan, 'plan_form': plan_form, 'formsets': formsets,
@@ -119,11 +148,11 @@ def plan_new(request, pk):
     if form.is_valid():
         try:
             plan_services.start_new_plan(dog, **form.cleaned_data)
-            messages.success(request, f'New plan “{form.cleaned_data["name"]}” started.')
+            messages.success(request, _('New plan “%(name)s” started.') % {'name': form.cleaned_data['name']})
         except ValidationError as error:
             messages.error(request, ' '.join(error.messages))
     else:
-        messages.error(request, 'Enter a plan name and start date.')
+        messages.error(request, _('Enter a plan name and start date.'))
     return redirect('plan_app:plan_edit', pk=dog.pk)
 
 
@@ -142,7 +171,7 @@ def session_record(request, pk, session_pk=None):
         except ValueError:
             day = today
         if day > today:
-            messages.error(request, 'Sessions cannot be recorded for future dates.')
+            messages.error(request, _('Sessions cannot be recorded for future dates.'))
             return redirect('plan_app:session_record', pk=dog.pk)
         entry = session_services.day_entries(dog, day)
         selected = request.GET.get('activity')
@@ -157,7 +186,9 @@ def session_record(request, pk, session_pk=None):
     form = TrainingSessionForm(request.POST or None, instance=session)
     if request.method == 'POST' and form.is_valid():
         session_services.save_session(form.save(commit=False))
-        messages.success(request, f'{session.exercise_type} on {day:%d %b %Y} saved.')
+        messages.success(request, _('%(activity)s on %(date)s saved.') % {
+            'activity': session.exercise_type, 'date': date_format(day, 'j M Y'),
+        })
         remaining = any(a['planned'] and not a['session'] for a in session_services.day_entries(dog, day)['activities'])
         if remaining:
             return redirect(f"{reverse('plan_app:session_record', args=[dog.pk])}?date={day:%Y-%m-%d}")

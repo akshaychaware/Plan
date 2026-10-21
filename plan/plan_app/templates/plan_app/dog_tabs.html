@@ -1,16 +1,19 @@
-{% with current=request.resolver_match.url_name %}
-<nav class="tabs" aria-label="{{ dog.name }} sections">
+{% load i18n %}{% with current=request.resolver_match.url_name %}
+<nav class="tabs" aria-label="{% blocktranslate with name=dog.name %}{{ name }} sections{% endblocktranslate %}">
   <a class="tab" href="{% url 'plan_app:dog_detail' dog.pk %}"{% if current == 'dog_detail' %} aria-current="page"{% endif %}>
-    {% include 'plan_app/icon.html' with name='home' %}<span>Dashboard</span>
+    {% include 'plan_app/icon.html' with name='home' %}<span>{% translate "Dashboard" %}</span>
   </a>
   <a class="tab" href="{% url 'plan_app:session_record' dog.pk %}"{% if current == 'session_record' %} aria-current="page"{% endif %}>
-    {% include 'plan_app/icon.html' with name='plus' %}<span>Record</span>
+    {% include 'plan_app/icon.html' with name='plus' %}<span>{% translate "Record" %}</span>
   </a>
   <a class="tab" href="{% url 'plan_app:plan_edit' dog.pk %}"{% if current == 'plan_edit' %} aria-current="page"{% endif %}>
-    {% include 'plan_app/icon.html' with name='calendar' %}<span>Plan</span>
+    {% include 'plan_app/icon.html' with name='calendar' %}<span>{% translate "Plan" %}</span>
   </a>
   <a class="tab" href="{% url 'plan_app:session_history' dog.pk %}"{% if current == 'session_history' %} aria-current="page"{% endif %}>
-    {% include 'plan_app/icon.html' with name='list' %}<span>History</span>
+    {% include 'plan_app/icon.html' with name='list' %}<span>{% translate "History" %}</span>
+  </a>
+  <a class="tab" href="{% url 'plan_app:weight_log' dog.pk %}"{% if current == 'weight_log' %} aria-current="page"{% endif %}>
+    {% include 'plan_app/icon.html' with name='scale' %}<span>{% translate "Weight" %}</span>
   </a>
 </nav>
 {% endwith %}

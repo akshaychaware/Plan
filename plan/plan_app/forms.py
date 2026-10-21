@@ -1,6 +1,7 @@
 from django import forms
+from django.utils.translation import gettext_lazy as _
 
-from .models import Dog, PlannedActivity, TrainingPlan, TrainingPlanDay, TrainingSession
+from .models import Dog, PlannedActivity, TrainingPlan, TrainingPlanDay, TrainingSession, WeightEntry
 
 DATE_INPUT = forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d')
 
@@ -16,8 +17,15 @@ class ExerciseTypeSelect(forms.Select):
 class DogForm(forms.ModelForm):
     class Meta:
         model = Dog
-        fields = ['name', 'breed', 'date_of_birth', 'weight_kg', 'notes']
+        fields = ['name', 'breed', 'date_of_birth', 'weight_kg', 'weekly_calorie_goal_kcal', 'notes']
         widgets = {'date_of_birth': DATE_INPUT, 'notes': forms.Textarea(attrs={'rows': 3})}
+
+
+class WeightEntryForm(forms.ModelForm):
+    class Meta:
+        model = WeightEntry
+        fields = ['date', 'weight_kg', 'notes']
+        widgets = {'date': DATE_INPUT}
 
 
 class TrainingPlanForm(forms.ModelForm):
@@ -28,8 +36,8 @@ class TrainingPlanForm(forms.ModelForm):
 
 
 class NewTrainingPlanForm(forms.Form):
-    name = forms.CharField(max_length=100)
-    start_date = forms.DateField(widget=DATE_INPUT)
+    name = forms.CharField(label=_('Name'), max_length=100)
+    start_date = forms.DateField(label=_('Start date'), widget=DATE_INPUT)
 
 
 class PlannedActivityForm(forms.ModelForm):
@@ -38,7 +46,7 @@ class PlannedActivityForm(forms.ModelForm):
         fields = ['exercise_type', 'planned_duration_minutes', 'planned_distance_km', 'planned_repetitions', 'notes']
         widgets = {
             'exercise_type': ExerciseTypeSelect,
-            'notes': forms.TextInput(attrs={'placeholder': 'e.g. 10 min + 5 min rest + 10 min'}),
+            'notes': forms.TextInput(attrs={'placeholder': _('e.g. 10 min + 5 min rest + 10 min')}),
         }
 
 
@@ -48,7 +56,7 @@ PlannedActivityFormSet = forms.inlineformset_factory(
 
 
 class TrainingSessionForm(forms.ModelForm):
-    status = forms.ChoiceField(choices=TrainingSession.Status.choices, widget=forms.RadioSelect)
+    status = forms.ChoiceField(label=_('Status'), choices=TrainingSession.Status.choices, widget=forms.RadioSelect)
 
     class Meta:
         model = TrainingSession
@@ -57,5 +65,5 @@ class TrainingSessionForm(forms.ModelForm):
         ]
         widgets = {
             'exercise_type': ExerciseTypeSelect,
-            'notes': forms.Textarea(attrs={'rows': 3, 'placeholder': 'How did the session go?'}),
+            'notes': forms.Textarea(attrs={'rows': 3, 'placeholder': _('How did the session go?')}),
         }

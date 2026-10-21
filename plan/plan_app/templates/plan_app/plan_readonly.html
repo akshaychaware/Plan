@@ -1,15 +1,19 @@
-<section class="card">
+{% load i18n %}<section class="card">
   <div class="card-header">
-    <h2>{{ plan.name|default:"No plan yet" }}</h2>
-    <span class="badge">Read only</span>
+    <h2>{% if plan.name %}{{ plan.name }}{% else %}{% translate "No plan yet" %}{% endif %}</h2>
+    <span class="badge">{% translate "Read only" %}</span>
   </div>
   {% if plan.pk %}
     <p class="muted m-0">
-      Active since {{ plan.start_date|date:"j M Y" }}{% if plan.end_date %} until {{ plan.end_date|date:"j M Y" }}{% endif %}.
-      Only administrators can change the plan.
+      {% if plan.end_date %}
+        {% blocktranslate with start=plan.start_date|date:"j M Y" end=plan.end_date|date:"j M Y" %}Active from {{ start }} until {{ end }}.{% endblocktranslate %}
+      {% else %}
+        {% blocktranslate with start=plan.start_date|date:"j M Y" %}Active since {{ start }}.{% endblocktranslate %}
+      {% endif %}
+      {% translate "Only administrators can change the plan." %}
     </p>
   {% else %}
-    <p class="muted m-0">An administrator hasn’t set up a training plan for {{ dog.name|capfirst }} yet.</p>
+    <p class="muted m-0">{% blocktranslate with name=dog.name|capfirst %}An administrator hasn’t set up a training plan for {{ name }} yet.{% endblocktranslate %}</p>
   {% endif %}
 </section>
 
@@ -28,7 +32,7 @@
               </div>
             </div>
           {% empty %}
-            <p class="muted m-0">Nothing planned.</p>
+            <p class="muted m-0">{% translate "Nothing planned." %}</p>
           {% endfor %}
         </div>
       </section>

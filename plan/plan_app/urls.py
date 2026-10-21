@@ -13,6 +13,7 @@ urlpatterns = [
     path('dogs/<int:pk>/plan/', views.plan_edit, name='plan_edit'),
     path('dogs/<int:pk>/plan/new/', views.plan_new, name='plan_new'),
     path('dogs/<int:pk>/sessions/', views.session_history, name='session_history'),
+    path('dogs/<int:pk>/weight/', views.weight_log, name='weight_log'),
     path('dogs/<int:pk>/sessions/record/', views.session_record, name='session_record'),
     path('dogs/<int:pk>/sessions/<int:session_pk>/', views.session_record, name='session_edit'),
     path(

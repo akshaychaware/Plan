@@ -165,6 +165,23 @@ if (rings.length && 'IntersectionObserver' in window && !matchMedia('(prefers-re
   });
 }
 
+const reminder = document.querySelector('dialog[data-weigh-in-reminder]');
+if (reminder?.showModal) {
+  const key = `weigh-in-dismissed-${reminder.dataset.weighInReminder}`;
+  let dismissed = false;
+  try {
+    dismissed = sessionStorage.getItem(key) === '1';
+  } catch {}
+  if (!dismissed) {
+    reminder.addEventListener('close', () => {
+      try {
+        sessionStorage.setItem(key, '1');
+      } catch {}
+    });
+    reminder.showModal();
+  }
+}
+
 if ('serviceWorker' in navigator && document.body.dataset.serviceWorker) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register(document.body.dataset.serviceWorker).catch(() => {});

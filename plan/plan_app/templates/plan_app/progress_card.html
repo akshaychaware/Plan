@@ -1,13 +1,13 @@
-<section class="card">
+{% load i18n %}<section class="card">
   <div class="card-header"><h2>{{ title }}</h2></div>
   <div class="progress-wrap">
-    <div class="ring" style="--value: {{ progress.percent }}" data-progress="{{ progress.percent }}" role="img" aria-label="{{ progress.percent }}% of training activities done">
+    <div class="ring" style="--value: {{ progress.percent }}" data-progress="{{ progress.percent }}" role="img" aria-label="{% blocktranslate with percent=progress.percent %}{{ percent }}% of training activities done{% endblocktranslate %}">
       <span>{{ progress.percent }}%</span>
     </div>
     <div>
-      <p class="mt-0"><strong>{{ progress.done }} of {{ progress.target }}</strong> planned training activities done.</p>
-      <p class="mt-0"><strong>{{ progress.calories|floatformat:"-1" }} kcal</strong> burned.</p>
-      <p class="muted m-0">Rest is not counted. Keep the streak going!</p>
+      <p class="mt-0">{% blocktranslate with done=progress.done target=progress.target %}<strong>{{ done }} of {{ target }}</strong> planned training activities done.{% endblocktranslate %}</p>
+      <p class="mt-0">{% blocktranslate with calories=progress.calories|floatformat:"-1" %}<strong>{{ calories }} kcal</strong> burned.{% endblocktranslate %}</p>
+      <p class="muted m-0">{% translate "Rest is not counted. Keep the streak going!" %}</p>
     </div>
   </div>
 </section>

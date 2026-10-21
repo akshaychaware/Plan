@@ -26,11 +26,11 @@ class TrainingSessionSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'dog_id', 'planned_activity_id', 'date', 'exercise_type_id', 'exercise', 'status',
             'planned_exercise', 'planned_duration_minutes', 'planned_distance_km', 'planned_repetitions',
-            'actual_duration_minutes', 'actual_distance_km', 'actual_repetitions', 'notes',
+            'actual_duration_minutes', 'actual_distance_km', 'actual_repetitions', 'calories_kcal', 'notes',
             'planned_summary', 'actual_summary', 'created_at', 'updated_at',
         ]
         read_only_fields = [
-            'planned_duration_minutes', 'planned_distance_km', 'planned_repetitions',
+            'planned_duration_minutes', 'planned_distance_km', 'planned_repetitions', 'calories_kcal',
             'planned_summary', 'actual_summary', 'created_at', 'updated_at',
         ]
         validators = []

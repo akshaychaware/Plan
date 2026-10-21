@@ -385,6 +385,9 @@ a.day.act-rest:hover { box-shadow: 0 12px 30px -8px rgb(52 211 153 / .65), inset
 .stat::after { content: ""; position: absolute; inset: auto -30px -30px auto; width: 90px; height: 90px; border-radius: 50%; background: var(--tone, var(--primary)); opacity: .1; }
 .stat-value { display: block; font-size: 1.75rem; font-weight: 800; letter-spacing: -.03em; color: var(--tone, var(--text)); }
 .stat-label { font-size: .8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.stat-note { display: block; margin-top: .25rem; font-size: .8rem; }
+.modal { width: min(420px, calc(100% - 2rem)); margin: auto; color: var(--text); box-shadow: var(--shadow); }
+.modal::backdrop { background: rgb(0 0 0 / .55); backdrop-filter: blur(2px); }
 .tone-success { --tone: var(--success); }
 .tone-warning { --tone: var(--warning); }
 .tone-danger { --tone: var(--danger); }

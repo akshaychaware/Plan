@@ -53,6 +53,17 @@ python manage.py test plan_app
 
 The suite creates a temporary `test_<DB_NAME>` database, so the database user needs permission to create databases.
 
+### Translations (English / मराठी)
+
+Users switch language from the top bar. Marathi strings live in `plan/plan_app/locale/mr/LC_MESSAGES/django.po`; the compiled `django.mo` next to it is what Django loads. After editing the `.po` file, recompile it:
+
+```bash
+cd plan
+python manage.py compilemessages -l mr        # needs GNU gettext (apt install gettext)
+# or, without gettext (dev only): pip install polib
+python -c "import polib; polib.pofile('plan_app/locale/mr/LC_MESSAGES/django.po').save_as_mofile('plan_app/locale/mr/LC_MESSAGES/django.mo')"
+```
+
 ## Documentation
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): architecture, domain model, database and API

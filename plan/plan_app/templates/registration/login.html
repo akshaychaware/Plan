@@ -1,17 +1,18 @@
 {% extends 'plan_app/base.html' %}
-{% block title %}Log in · Training Tracker{% endblock %}
+{% load i18n %}
+{% block title %}{% translate "Log in" %} · {% translate "Training Tracker" %}{% endblock %}
 {% block content %}
 <div class="auth">
   <form method="post" class="card form-stack">
     {% csrf_token %}
     <div class="empty auth-head">
       <span class="brand-mark">{% include 'plan_app/icon.html' with name='paw' %}</span>
-      <h1>Welcome back</h1>
-      <p class="m-0">Log in to track today’s training.</p>
+      <h1>{% translate "Welcome back" %}</h1>
+      <p class="m-0">{% translate "Log in to track today’s training." %}</p>
     </div>
     {{ form }}
     <input type="hidden" name="next" value="{{ next }}">
-    <div class="form-actions"><button class="btn btn-block">Log in</button></div>
+    <div class="form-actions"><button class="btn btn-block">{% translate "Log in" %}</button></div>
   </form>
 </div>
 {% endblock %}

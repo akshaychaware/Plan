@@ -1,0 +1,667 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Training Tracker\n"
+"Language: mr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Name"
+msgstr "नाव"
+
+msgid "Start date"
+msgstr "सुरुवातीची तारीख"
+
+msgid "Status"
+msgstr "स्थिती"
+
+msgid "e.g. 10 min + 5 min rest + 10 min"
+msgstr "उदा. 10 min + 5 min विश्रांती + 10 min"
+
+msgid "How did the session go?"
+msgstr "सत्र कसे झाले?"
+
+msgid "Nothing to quick-log for that activity."
+msgstr "त्या उपक्रमासाठी त्वरित नोंद करण्यासारखे काही नाही."
+
+msgid "Weekly plan saved."
+msgstr "साप्ताहिक योजना जतन केली."
+
+msgid "Enter a plan name and start date."
+msgstr "योजनेचे नाव आणि सुरुवातीची तारीख भरा."
+
+#, python-format
+msgid "%(dog)s added. Now configure the weekly plan."
+msgstr "%(dog)s जोडले. आता साप्ताहिक योजना तयार करा."
+
+#, python-format
+msgid "Weight for %(dog)s on %(date)s saved."
+msgstr "%(dog)s चे %(date)s रोजीचे वजन जतन केले."
+
+#, python-format
+msgid "%(activity)s logged as completed."
+msgstr "%(activity)s पूर्ण म्हणून नोंदवले."
+
+msgid "Sessions cannot be recorded for future dates."
+msgstr "भविष्यातील तारखांसाठी सत्रे नोंदवता येत नाहीत."
+
+#, python-format
+msgid "%(activity)s on %(date)s saved."
+msgstr "%(date)s रोजीचे %(activity)s जतन केले."
+
+#, python-format
+msgid "%(dog)s updated."
+msgstr "%(dog)s अद्ययावत केले."
+
+#, python-format
+msgid "New plan “%(name)s” started."
+msgstr "नवीन योजना “%(name)s” सुरू झाली."
+
+msgid "name"
+msgstr "नाव"
+
+msgid "breed"
+msgstr "जात"
+
+msgid "date of birth"
+msgstr "जन्मतारीख"
+
+msgid "weight (kg)"
+msgstr "वजन (kg)"
+
+msgid "weekly calorie goal (kcal)"
+msgstr "साप्ताहिक कॅलरी लक्ष्य (kcal)"
+
+msgid "notes"
+msgstr "नोंदी"
+
+msgid "date"
+msgstr "तारीख"
+
+msgid "This week"
+msgstr "हा आठवडा"
+
+msgid "This month"
+msgstr "हा महिना"
+
+msgid "All time"
+msgstr "आतापर्यंत"
+
+msgid "Planned"
+msgstr "नियोजित"
+
+msgid "actual duration (min)"
+msgstr "प्रत्यक्ष कालावधी (min)"
+
+msgid "actual distance (km)"
+msgstr "प्रत्यक्ष अंतर (km)"
+
+msgid "actual repetitions"
+msgstr "प्रत्यक्ष पुनरावृत्ती"
+
+msgid "status"
+msgstr "स्थिती"
+
+msgid "calories (kcal)"
+msgstr "कॅलरी (kcal)"
+
+msgid "Completed"
+msgstr "पूर्ण"
+
+msgid "Partially completed"
+msgstr "अंशतः पूर्ण"
+
+msgid "Skipped"
+msgstr "वगळले"
+
+msgid "activity"
+msgstr "उपक्रम"
+
+msgid "Leave empty for skipped sessions."
+msgstr "वगळलेल्या सत्रांसाठी रिकामे ठेवा."
+
+#, python-format
+msgid "%(activity)s does not track duration, distance or repetitions."
+msgstr "%(activity)s साठी कालावधी, अंतर किंवा पुनरावृत्ती नोंदवल्या जात नाहीत."
+
+#, python-format
+msgid "This planned activity is not in %(dog)s’s plan for this date."
+msgstr "हा नियोजित उपक्रम या तारखेच्या %(dog)s च्या योजनेत नाही."
+
+#, python-format
+msgid "Must be after the current plan start (%(date)s)."
+msgstr "सध्याच्या योजनेच्या सुरुवातीनंतर (%(date)s) असावी."
+
+msgid "Monday"
+msgstr "सोमवार"
+
+msgid "Tuesday"
+msgstr "मंगळवार"
+
+msgid "Wednesday"
+msgstr "बुधवार"
+
+msgid "Thursday"
+msgstr "गुरुवार"
+
+msgid "Friday"
+msgstr "शुक्रवार"
+
+msgid "Saturday"
+msgstr "शनिवार"
+
+msgid "Sunday"
+msgstr "रविवार"
+
+msgid "start date"
+msgstr "सुरुवातीची तारीख"
+
+msgid "end date"
+msgstr "शेवटची तारीख"
+
+msgid "planned duration (min)"
+msgstr "नियोजित कालावधी (min)"
+
+msgid "planned distance (km)"
+msgstr "नियोजित अंतर (km)"
+
+msgid "planned repetitions"
+msgstr "नियोजित पुनरावृत्ती"
+
+msgid "End date must be on or after the start date."
+msgstr "शेवटची तारीख सुरुवातीच्या तारखेला किंवा त्यानंतर असावी."
+
+msgid "Only administrators can change training plans."
+msgstr "फक्त प्रशासक प्रशिक्षण योजना बदलू शकतात."
+
+msgid "No plan"
+msgstr "योजना नाही"
+
+msgid "Date cannot be in the future."
+msgstr "तारीख भविष्यातील असू शकत नाही."
+
+#, python-format
+msgid "%(count)s reps"
+msgstr "%(count)s पुनरावृत्ती"
+
+msgid "Bike/Cycle"
+msgstr "सायकलिंग"
+
+msgid "Hill Climbing"
+msgstr "टेकडी चढणे"
+
+msgid "Rest"
+msgstr "विश्रांती"
+
+msgid "Running"
+msgstr "धावणे"
+
+msgid "Swimming"
+msgstr "पोहणे"
+
+msgid "Walking"
+msgstr "चालणे"
+
+msgid "Log in"
+msgstr "लॉग इन करा"
+
+msgid "Training Tracker"
+msgstr "प्रशिक्षण ट्रॅकर"
+
+msgid "Welcome back"
+msgstr "पुन्हा स्वागत आहे"
+
+msgid "Log in to track today’s training."
+msgstr "आजचे प्रशिक्षण नोंदवण्यासाठी लॉग इन करा."
+
+msgid "All dogs"
+msgstr "सर्व श्वान"
+
+#, python-format
+msgid "%(age)s old"
+msgstr "वय %(age)s"
+
+msgid "Record session"
+msgstr "सत्र नोंदवा"
+
+msgid "Edit profile"
+msgstr "प्रोफाइल संपादित करा"
+
+#, python-format
+msgid "%(days)s-day streak"
+msgstr "%(days)s दिवसांची सलग मालिका"
+
+#, python-format
+msgid "%(done)s/%(target)s training activities this week"
+msgstr "या आठवड्यात %(done)s/%(target)s प्रशिक्षण उपक्रम"
+
+#, python-format
+msgid "%(name)s · since %(date)s"
+msgstr "%(name)s · %(date)s पासून"
+
+msgid "Today’s training"
+msgstr "आजचे प्रशिक्षण"
+
+msgid "No training planned today."
+msgstr "आज कोणतेही प्रशिक्षण नियोजित नाही."
+
+msgid "Create a training plan"
+msgstr "प्रशिक्षण योजना तयार करा"
+
+msgid "Add an extra activity"
+msgstr "अतिरिक्त उपक्रम जोडा"
+
+msgid "Weekly progress"
+msgstr "साप्ताहिक प्रगती"
+
+msgid "Monthly progress"
+msgstr "मासिक प्रगती"
+
+msgid "Weekly calorie goal"
+msgstr "साप्ताहिक कॅलरी लक्ष्य"
+
+#, python-format
+msgid "%(percent)s%% of the weekly calorie goal"
+msgstr "साप्ताहिक कॅलरी लक्ष्याच्या %(percent)s%%"
+
+#, python-format
+msgid "<strong>%(calories)s of %(goal)s kcal</strong> burned this week."
+msgstr "या आठवड्यात <strong>%(goal)s पैकी %(calories)s kcal</strong> खर्च झाल्या."
+
+#, python-format
+msgid "%(remaining)s kcal to go."
+msgstr "आणखी %(remaining)s kcal बाकी."
+
+msgid "Goal reached!"
+msgstr "लक्ष्य पूर्ण झाले!"
+
+msgid "Edit plan"
+msgstr "योजना संपादित करा"
+
+msgid "View plan"
+msgstr "योजना पहा"
+
+msgid "Partial"
+msgstr "अंशतः"
+
+msgid "Personal records"
+msgstr "वैयक्तिक विक्रम"
+
+msgid "Longest distance"
+msgstr "सर्वाधिक अंतर"
+
+msgid "Best week"
+msgstr "सर्वोत्तम आठवडा"
+
+#, python-format
+msgid "Week of %(date)s"
+msgstr "%(date)s चा आठवडा"
+
+#, python-format
+msgid "%(days)s day"
+msgid_plural "%(days)s days"
+msgstr[0] "%(days)s दिवस"
+msgstr[1] "%(days)s दिवस"
+
+msgid "Longest streak"
+msgstr "सर्वात मोठी सलग मालिका"
+
+msgid "Statistics"
+msgstr "आकडेवारी"
+
+msgid "Statistics period"
+msgstr "आकडेवारीचा कालावधी"
+
+msgid "Training days"
+msgstr "प्रशिक्षणाचे दिवस"
+
+msgid "Rest days"
+msgstr "विश्रांतीचे दिवस"
+
+msgid "Completion"
+msgstr "पूर्णता"
+
+msgid "Minutes"
+msgstr "मिनिटे"
+
+msgid "Kilometres"
+msgstr "किलोमीटर"
+
+msgid "Activity breakdown"
+msgstr "उपक्रमनिहाय तपशील"
+
+#, python-format
+msgid "%(sessions)s session"
+msgid_plural "%(sessions)s sessions"
+msgstr[0] "%(sessions)s सत्र"
+msgstr[1] "%(sessions)s सत्रे"
+
+#, python-format
+msgid "%(minutes)s min (avg %(average)s)"
+msgstr "%(minutes)s min (सरासरी %(average)s)"
+
+msgid "No sessions recorded for this period yet."
+msgstr "या कालावधीसाठी अजून कोणतेही सत्र नोंदवलेले नाही."
+
+#, python-format
+msgid "Time to weigh %(name)s"
+msgstr "%(name)s चे वजन करण्याची वेळ झाली"
+
+#, python-format
+msgid "The last weigh-in was %(weight)s kg on %(date)s, %(ago)s ago."
+msgstr "शेवटचे वजन %(date)s रोजी %(weight)s kg होते (%(ago)s पूर्वी)."
+
+#, python-format
+msgid "%(name)s has no weigh-ins yet."
+msgstr "%(name)s चे अजून वजन नोंदवलेले नाही."
+
+msgid "Weigh every 15 days to track progress."
+msgstr "प्रगतीचा मागोवा घेण्यासाठी दर 15 दिवसांनी वजन करा."
+
+msgid "Record weight"
+msgstr "वजन नोंदवा"
+
+msgid "Later"
+msgstr "नंतर"
+
+msgid "Weight"
+msgstr "वजन"
+
+msgid "Weight log"
+msgstr "वजन नोंदवही"
+
+#, python-format
+msgid "Weigh %(name)s every 15 days."
+msgstr "%(name)s चे दर 15 दिवसांनी वजन करा."
+
+msgid "Next weigh-in is due now."
+msgstr "पुढील वजन आता करायचे आहे."
+
+#, python-format
+msgid "Next weigh-in on %(date)s."
+msgstr "पुढील वजन %(date)s रोजी."
+
+msgid "No weigh-ins recorded yet."
+msgstr "अजून कोणतेही वजन नोंदवलेले नाही."
+
+#, python-format
+msgid "%(calories)s kcal burned since the last weigh-in."
+msgstr "शेवटच्या वजनानंतर %(calories)s kcal खर्च झाल्या."
+
+msgid "Save weigh-in"
+msgstr "वजन जतन करा"
+
+msgid "Date"
+msgstr "तारीख"
+
+msgid "Change"
+msgstr "बदल"
+
+msgid "Calories burned"
+msgstr "खर्च झालेल्या कॅलरी"
+
+msgid "Notes"
+msgstr "नोंदी"
+
+msgid "Calories burned are counted from the previous weigh-in up to this one."
+msgstr "मागील वजनापासून या वजनापर्यंत खर्च झालेल्या कॅलरी मोजल्या जातात."
+
+msgid "No weigh-ins yet. Record the first one to start tracking."
+msgstr "अजून वजन नोंदवलेले नाही. मागोवा सुरू करण्यासाठी पहिले वजन नोंदवा."
+
+msgid "No plan yet"
+msgstr "अजून योजना नाही"
+
+msgid "Read only"
+msgstr "फक्त वाचनासाठी"
+
+#, python-format
+msgid "Active from %(start)s until %(end)s."
+msgstr "%(start)s ते %(end)s पर्यंत सक्रिय."
+
+#, python-format
+msgid "Active since %(start)s."
+msgstr "%(start)s पासून सक्रिय."
+
+msgid "Only administrators can change the plan."
+msgstr "फक्त प्रशासक योजना बदलू शकतात."
+
+#, python-format
+msgid "An administrator hasn’t set up a training plan for %(name)s yet."
+msgstr "प्रशासकाने अजून %(name)s साठी प्रशिक्षण योजना तयार केलेली नाही."
+
+msgid "Nothing planned."
+msgstr "काहीही नियोजित नाही."
+
+msgid "Language"
+msgstr "भाषा"
+
+msgid "Toggle dark mode"
+msgstr "डार्क मोड बदला"
+
+msgid "Log out"
+msgstr "लॉग आउट"
+
+msgid "Dismiss"
+msgstr "बंद करा"
+
+msgid "Upcoming"
+msgstr "आगामी"
+
+msgid "Not recorded"
+msgstr "नोंद नाही"
+
+msgid "(extra)"
+msgstr "(अतिरिक्त)"
+
+#, python-format
+msgid "Actual: %(summary)s"
+msgstr "प्रत्यक्ष: %(summary)s"
+
+msgid "Log as completed with planned values"
+msgstr "नियोजित मूल्यांसह पूर्ण म्हणून नोंदवा"
+
+msgid "Done"
+msgstr "झाले"
+
+msgid "Edit"
+msgstr "संपादित करा"
+
+msgid "Record"
+msgstr "नोंद करा"
+
+#, python-format
+msgid "Edit %(name)s"
+msgstr "%(name)s संपादित करा"
+
+msgid "Add dog"
+msgstr "श्वान जोडा"
+
+msgid "Add a dog"
+msgstr "श्वान जोडा"
+
+msgid "Update the profile details."
+msgstr "प्रोफाइलचे तपशील अद्ययावत करा."
+
+msgid "You’ll set up the training plan next."
+msgstr "यानंतर तुम्ही प्रशिक्षण योजना तयार कराल."
+
+msgid "Save changes"
+msgstr "बदल जतन करा"
+
+msgid "Save and continue"
+msgstr "जतन करा आणि पुढे जा"
+
+msgid "Cancel"
+msgstr "रद्द करा"
+
+msgid "Activity"
+msgstr "उपक्रम"
+
+msgid "Km"
+msgstr "km"
+
+msgid "Reps"
+msgstr "पुनरावृत्ती"
+
+msgid "Remove this activity"
+msgstr "हा उपक्रम काढा"
+
+msgid "Remove"
+msgstr "काढा"
+
+msgid "Training plan"
+msgstr "प्रशिक्षण योजना"
+
+#, python-format
+msgid "Plan any number of activities per day for %(name)s. Changing the plan never alters recorded sessions."
+msgstr "%(name)s साठी दररोज कितीही उपक्रम नियोजित करा. योजना बदलल्याने नोंदवलेली सत्रे कधीही बदलत नाहीत."
+
+msgid "Active plan"
+msgstr "सक्रिय योजना"
+
+msgid "New plan"
+msgstr "नवीन योजना"
+
+msgid "Active"
+msgstr "सक्रिय"
+
+msgid "Add activity"
+msgstr "उपक्रम जोडा"
+
+msgid "Nothing planned. Add an activity (use “Rest” for planned recovery)."
+msgstr "काहीही नियोजित नाही. उपक्रम जोडा (नियोजित विश्रांतीसाठी “विश्रांती” वापरा)."
+
+msgid "Save plan"
+msgstr "योजना जतन करा"
+
+msgid "Start a new plan version"
+msgstr "योजनेची नवीन आवृत्ती सुरू करा"
+
+msgid ""
+"Copies the current week into a new plan starting on the chosen date and ends the current plan the day before. Use this"
+" when the routine changes for a new period."
+msgstr ""
+"सध्याचा आठवडा निवडलेल्या तारखेपासून सुरू होणाऱ्या नवीन योजनेत कॉपी करते आणि सध्याची योजना आदल्या दिवशी संपवते. नवीन "
+"कालावधीसाठी दिनक्रम बदलल्यास हे वापरा."
+
+msgid "Start new version"
+msgstr "नवीन आवृत्ती सुरू करा"
+
+#, python-format
+msgid "%(percent)s%% of training activities done"
+msgstr "%(percent)s%% प्रशिक्षण उपक्रम पूर्ण"
+
+#, python-format
+msgid "<strong>%(done)s of %(target)s</strong> planned training activities done."
+msgstr "<strong>%(target)s पैकी %(done)s</strong> नियोजित प्रशिक्षण उपक्रम पूर्ण."
+
+#, python-format
+msgid "<strong>%(calories)s kcal</strong> burned."
+msgstr "<strong>%(calories)s kcal</strong> खर्च झाल्या."
+
+msgid "Rest is not counted. Keep the streak going!"
+msgstr "विश्रांती मोजली जात नाही. सलग मालिका चालू ठेवा!"
+
+msgid "Dogs"
+msgstr "श्वान"
+
+msgid "Pick a dog to see today’s training, the week and progress."
+msgstr "आजचे प्रशिक्षण, आठवडा आणि प्रगती पाहण्यासाठी श्वान निवडा."
+
+msgid "No dogs yet"
+msgstr "अजून कोणतेही श्वान नाहीत"
+
+msgid "Add your first dog to start planning training."
+msgstr "प्रशिक्षणाचे नियोजन सुरू करण्यासाठी तुमचा पहिला श्वान जोडा."
+
+msgid "Add your first dog"
+msgstr "तुमचा पहिला श्वान जोडा"
+
+msgid "Training session"
+msgstr "प्रशिक्षण सत्र"
+
+msgid "Edit session"
+msgstr "सत्र संपादित करा"
+
+#, python-format
+msgid "Activities on %(date)s"
+msgstr "%(date)s रोजीचे उपक्रम"
+
+msgid "Extra activity"
+msgstr "अतिरिक्त उपक्रम"
+
+msgid "Save session"
+msgstr "सत्र जतन करा"
+
+msgid "An extra activity outside the plan."
+msgstr "योजनेबाहेरील अतिरिक्त उपक्रम."
+
+msgid "Choose another date"
+msgstr "दुसरी तारीख निवडा"
+
+msgid "Go to date"
+msgstr "त्या तारखेवर जा"
+
+msgid "Offline"
+msgstr "ऑफलाइन"
+
+msgid "You’re offline"
+msgstr "तुम्ही ऑफलाइन आहात"
+
+msgid "Training Tracker needs a connection to load and save sessions. Reconnect and try again."
+msgstr ""
+"सत्रे लोड आणि जतन करण्यासाठी प्रशिक्षण ट्रॅकरला इंटरनेट कनेक्शन आवश्यक आहे. पुन्हा कनेक्ट करा आणि पुन्हा प्रयत्न करा."
+
+msgid "Retry"
+msgstr "पुन्हा प्रयत्न करा"
+
+msgid "History"
+msgstr "इतिहास"
+
+msgid "Training history"
+msgstr "प्रशिक्षण इतिहास"
+
+#, python-format
+msgid "Every recorded session for %(name)s, planned vs actual, exactly as it was at the time."
+msgstr "%(name)s चे प्रत्येक नोंदवलेले सत्र, नियोजित विरुद्ध प्रत्यक्ष, त्या वेळी होते तसेच."
+
+msgid "Filter by status"
+msgstr "स्थितीनुसार फिल्टर करा"
+
+msgid "All"
+msgstr "सर्व"
+
+msgid "Actual"
+msgstr "प्रत्यक्ष"
+
+msgid "Calories"
+msgstr "कॅलरी"
+
+msgid "Previous"
+msgstr "मागील"
+
+#, python-format
+msgid "Page %(number)s of %(total)s"
+msgstr "पृष्ठ %(number)s / %(total)s"
+
+msgid "Next"
+msgstr "पुढील"
+
+msgid "No sessions yet"
+msgstr "अजून कोणतेही सत्र नाही"
+
+msgid "Record a session and it will show up here."
+msgstr "सत्र नोंदवा, ते येथे दिसेल."
+
+#, python-format
+msgid "%(name)s sections"
+msgstr "%(name)s विभाग"
+
+msgid "Dashboard"
+msgstr "डॅशबोर्ड"
+
+msgid "Plan"
+msgstr "योजना"

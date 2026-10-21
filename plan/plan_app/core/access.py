@@ -2,6 +2,7 @@ import os
 
 from django.contrib.staticfiles import finders
 from django.core.exceptions import PermissionDenied
+from django.utils.translation import gettext
 
 ASSETS = ('plan_app/style.css', 'plan_app/app.js', 'plan_app/theme.js')
 
@@ -12,7 +13,7 @@ def is_admin(user):
 
 def require_admin(user):
     if not is_admin(user):
-        raise PermissionDenied('Only administrators can change training plans.')
+        raise PermissionDenied(gettext('Only administrators can change training plans.'))
 
 
 def asset_version():
