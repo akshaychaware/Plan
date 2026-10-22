@@ -162,6 +162,32 @@ class WebTests(TrackerTestCase):
         self.assertContains(response, 'Weekly calorie goal')
         self.assertEqual(response.context['calorie_goal']['remaining'], Decimal('2.5'))
 
+    def test_audit_log_records_who_changed_sessions_and_plans(self):
+        self.client.force_login(self.other_user)
+        self.client.post(self.url('session_quick_log', self.swim.pk))
+        session = self.dog.sessions.get()
+
+        self.client.force_login(self.user)
+        self.client.post(self.url('session_edit', session.pk), {
+            'exercise_type': self.swim.exercise_type_id, 'status': 'PARTIALLY_COMPLETED', 'actual_duration_minutes': 12,
+        })
+        self.client.post(self.url('session_edit', session.pk), {
+            'exercise_type': self.swim.exercise_type_id, 'status': 'PARTIALLY_COMPLETED', 'actual_duration_minutes': 12,
+        })
+        self.client.post(self.url('plan_new'), {'name': 'Winter', 'start_date': f'{self.today:%Y-%m-%d}'})
+
+        created, updated = self.dog.audit_entries.filter(target='SESSION').order_by('id')
+        self.assertEqual((created.action, created.username), ('CREATED', 'other'))
+        self.assertEqual((updated.action, updated.username), ('UPDATED', 'owner'))
+        self.assertEqual(updated.changes, [
+            {'field': 'status', 'old': 'Completed', 'new': 'Partially completed'},
+            {'field': 'actual duration (min)', 'old': '20', 'new': '12'},
+        ])
+        plan_entries = self.dog.audit_entries.filter(target='PLAN', username='owner')
+        self.assertEqual(plan_entries.count(), 3)
+        old_plan = plan_entries.get(object_id=self.plan.pk)
+        self.assertIn({'field': 'is active', 'old': 'True', 'new': 'False'}, old_plan.changes)
+
     def test_pwa_endpoints(self):
         self.client.logout()
         response = self.client.get(reverse('plan_app:service_worker'))

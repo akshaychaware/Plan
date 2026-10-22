@@ -107,7 +107,7 @@ def session_quick_log(request, pk, activity_pk):
     dog = _get_dog(request, pk)
     today = timezone.localdate()
     planned = plan_services.planned_activities_for(dog, today).filter(pk=activity_pk).first()
-    if planned is None or session_services.complete_as_planned(dog, planned, today) is None:
+    if planned is None or session_services.complete_as_planned(dog, planned, today, request.user) is None:
         messages.info(request, _('Nothing to quick-log for that activity.'))
     else:
         messages.success(request, _('%(activity)s logged as completed.') % {'activity': planned.exercise_type})
@@ -132,7 +132,7 @@ def plan_edit(request, pk):
         for day in Weekday.values
     ]
     if request.method == 'POST' and all([plan_form.is_valid(), *[fs.is_valid() for fs in formsets]]):
-        plan_services.save_plan(plan_form.save(commit=False))
+        plan_services.save_plan(plan_form.save(commit=False), request.user)
         plan_services.save_week(plan, {
             formset.instance.day_of_week: [
                 {**{field: form.cleaned_data.get(field) for field in plan_services.ACTIVITY_FIELDS},
@@ -140,7 +140,7 @@ def plan_edit(request, pk):
                 for form in formset.forms if form.cleaned_data and not form.cleaned_data.get('DELETE')
             ]
             for formset in formsets
-        })
+        }, request.user)
         messages.success(request, _('Weekly plan saved.'))
         return redirect('plan_app:dog_detail', pk=dog.pk)
     return render(request, 'plan_app/plan_form.html', {
@@ -157,7 +157,7 @@ def plan_new(request, pk):
     form = NewTrainingPlanForm(request.POST)
     if form.is_valid():
         try:
-            plan_services.start_new_plan(dog, **form.cleaned_data)
+            plan_services.start_new_plan(dog, user=request.user, **form.cleaned_data)
             messages.success(request, _('New plan “%(name)s” started.') % {'name': form.cleaned_data['name']})
         except ValidationError as error:
             messages.error(request, ' '.join(error.messages))
@@ -195,7 +195,7 @@ def session_record(request, pk, session_pk=None):
 
     form = TrainingSessionForm(request.POST or None, instance=session)
     if request.method == 'POST' and form.is_valid():
-        session_services.save_session(form.save(commit=False))
+        session_services.save_session(form.save(commit=False), request.user)
         messages.success(request, _('%(activity)s on %(date)s saved.') % {
             'activity': session.exercise_type, 'date': date_format(day, 'j M Y'),
         })

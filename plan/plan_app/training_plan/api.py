@@ -23,7 +23,7 @@ class TrainingPlanViewSet(
 
     @action(detail=True, methods=['post'])
     def activate(self, request, pk=None):
-        return Response(self.get_serializer(services.activate_plan(self.get_object())).data)
+        return Response(self.get_serializer(services.activate_plan(self.get_object(), request.user)).data)
 
     @action(detail=True, methods=['get', 'put'])
     def days(self, request, pk=None):
@@ -31,6 +31,8 @@ class TrainingPlanViewSet(
         if request.method == 'PUT':
             serializer = TrainingPlanDaySerializer(data=request.data, many=True)
             serializer.is_valid(raise_exception=True)
-            services.save_week(plan, {day['day_of_week']: day['activities'] for day in serializer.validated_data})
+            services.save_week(
+                plan, {day['day_of_week']: day['activities'] for day in serializer.validated_data}, request.user
+            )
         days = plan.days.prefetch_related('activities__exercise_type')
         return Response(TrainingPlanDaySerializer(days, many=True).data)

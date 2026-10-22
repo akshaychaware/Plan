@@ -1,7 +1,9 @@
 from django.contrib import admin
 
 from .dog.services import sync_current_weight
-from .models import Dog, ExerciseType, PlannedActivity, TrainingPlan, TrainingPlanDay, TrainingSession, WeightEntry
+from .models import (
+    AuditEntry, Dog, ExerciseType, PlannedActivity, TrainingPlan, TrainingPlanDay, TrainingSession, WeightEntry,
+)
 from .training_session.services import save_session
 
 
@@ -68,4 +70,20 @@ class TrainingSessionAdmin(admin.ModelAdmin):
     readonly_fields = ['calories_kcal']
 
     def save_model(self, request, obj, form, change):
-        save_session(obj)
+        save_session(obj, request.user)
+
+
+@admin.register(AuditEntry)
+class AuditEntryAdmin(admin.ModelAdmin):
+    list_display = ['created_at', 'username', 'dog', 'target', 'action', 'object_repr']
+    list_filter = ['target', 'action', 'dog']
+    date_hierarchy = 'created_at'
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

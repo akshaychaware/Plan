@@ -3,12 +3,16 @@ from datetime import timedelta
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Q
+from django.utils import translation
 from django.utils.formats import date_format
 from django.utils.translation import gettext
+
+from plan_app.core.models import AuditEntry
 
 from .models import PlannedActivity, TrainingPlan, TrainingPlanDay, Weekday
 
 ACTIVITY_FIELDS = ('exercise_type', 'planned_duration_minutes', 'planned_distance_km', 'planned_repetitions', 'notes')
+PLAN_FIELDS = ('name', 'start_date', 'end_date', 'is_active')
 
 
 def active_plan(dog):
@@ -41,10 +45,24 @@ def ensure_days(plan):
     return days
 
 
+def week_snapshot(plan):
+    """Each weekday's planned activities as one readable line, for the audit log."""
+    days = {day.day_of_week: day for day in plan.days.prefetch_related('activities__exercise_type')}
+    with translation.override(None):
+        return {
+            str(label): '; '.join(
+                f'{a.summary} ({a.notes})' if a.notes else a.summary for a in days[value].activities.all()
+            ) if value in days else ''
+            for value, label in Weekday.choices
+        }
+
+
 @transaction.atomic
-def save_plan(plan):
+def save_plan(plan, user=None):
+    before = AuditEntry.stored(plan, PLAN_FIELDS)
     plan.full_clean()
     plan.save()
+    AuditEntry.log(user, AuditEntry.Target.PLAN, plan, before, AuditEntry.snapshot(plan, PLAN_FIELDS))
     ensure_days(plan)
     if plan.is_active:
         plan.dog.training_plans.exclude(pk=plan.pk).filter(is_active=True).update(is_active=False)
@@ -52,14 +70,15 @@ def save_plan(plan):
 
 
 @transaction.atomic
-def activate_plan(plan):
+def activate_plan(plan, user=None):
     plan.is_active = True
-    return save_plan(plan)
+    return save_plan(plan, user)
 
 
 @transaction.atomic
-def save_week(plan, week):
+def save_week(plan, week, user=None):
     """Upsert planned activities per day; `week` maps day_of_week to an ordered list of activity dicts."""
+    before = week_snapshot(plan)
     days = ensure_days(plan)
     for day_of_week, items in week.items():
         day = days[day_of_week]
@@ -74,22 +93,25 @@ def save_week(plan, week):
             activity.save()
             kept.append(activity.pk)
         day.activities.exclude(pk__in=kept).delete()
+    AuditEntry.log(user, AuditEntry.Target.PLAN, plan, before, week_snapshot(plan))
     return plan
 
 
 @transaction.atomic
-def start_new_plan(dog, *, name, start_date):
+def start_new_plan(dog, *, name, start_date, user=None):
     current = active_plan(dog)
     if current and start_date <= current.start_date:
         raise ValidationError({'start_date': gettext('Must be after the current plan start (%(date)s).') % {
             'date': date_format(current.start_date, 'j M Y'),
         }})
-    plan = save_plan(TrainingPlan(dog=dog, name=name, start_date=start_date, is_active=True))
+    before = current and AuditEntry.snapshot(current, PLAN_FIELDS)
+    plan = save_plan(TrainingPlan(dog=dog, name=name, start_date=start_date, is_active=True), user)
     if current:
         current.end_date = start_date - timedelta(days=1)
         current.save(update_fields=['end_date', 'updated_at'])
+        AuditEntry.log(user, AuditEntry.Target.PLAN, current, before, AuditEntry.stored(current, PLAN_FIELDS))
         save_week(plan, {
             day.day_of_week: [{field: getattr(a, field) for field in ACTIVITY_FIELDS} for a in day.activities.all()]
             for day in current.days.prefetch_related('activities')
-        })
+        }, user)
     return plan

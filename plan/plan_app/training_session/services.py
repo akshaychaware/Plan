@@ -3,7 +3,7 @@ from datetime import timedelta
 from django.db import transaction
 from django.utils.translation import gettext
 
-from plan_app.core.models import METRICS
+from plan_app.core.models import METRICS, AuditEntry
 from plan_app.exercise.models import ExerciseType
 from plan_app.training_plan.services import planned_activities_for
 
@@ -66,6 +66,7 @@ def history_days(sessions, dates):
 
 
 CALORIE_INPUTS = ('exercise_type_id', 'actual_duration_minutes', 'actual_distance_km')
+AUDIT_FIELDS = ('exercise_type', 'status', 'actual_duration_minutes', 'actual_distance_km', 'actual_repetitions', 'notes')
 
 
 def snapshot_calories(session):
@@ -84,7 +85,8 @@ def snapshot_calories(session):
 
 
 @transaction.atomic
-def save_session(session, **values):
+def save_session(session, user=None, **values):
+    before = AuditEntry.stored(session, AUDIT_FIELDS)
     for field, value in values.items():
         setattr(session, field, value)
     if session.status == Status.SKIPPED:
@@ -94,15 +96,16 @@ def save_session(session, **values):
     session.full_clean()
     snapshot_calories(session)
     session.save()
+    AuditEntry.log(user, AuditEntry.Target.SESSION, session, before, AuditEntry.snapshot(session, AUDIT_FIELDS))
     return session
 
 
-def record_session(*, dog, day, planned_activity=None, **values):
+def record_session(*, dog, day, planned_activity=None, user=None, **values):
     existing = planned_activity and dog.sessions.filter(date=day, planned_activity=planned_activity).first()
-    return save_session(existing or TrainingSession.from_planned(dog, day, planned_activity), **values)
+    return save_session(existing or TrainingSession.from_planned(dog, day, planned_activity), user, **values)
 
 
-def complete_as_planned(dog, planned_activity, day):
+def complete_as_planned(dog, planned_activity, day, user=None):
     if dog.sessions.filter(date=day, planned_activity=planned_activity).exists():
         return None
-    return record_session(dog=dog, day=day, planned_activity=planned_activity, status=Status.COMPLETED)
+    return record_session(dog=dog, day=day, planned_activity=planned_activity, user=user, status=Status.COMPLETED)

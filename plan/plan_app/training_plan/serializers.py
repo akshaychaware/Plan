@@ -16,13 +16,13 @@ class TrainingPlanSerializer(serializers.ModelSerializer):
         read_only_fields = ['created_at', 'updated_at']
 
     def create(self, validated_data):
-        return services.save_plan(TrainingPlan(**validated_data))
+        return services.save_plan(TrainingPlan(**validated_data), self.context['request'].user)
 
     def update(self, instance, validated_data):
         validated_data.pop('dog', None)
         for field, value in validated_data.items():
             setattr(instance, field, value)
-        return services.save_plan(instance)
+        return services.save_plan(instance, self.context['request'].user)
 
 
 class PlannedActivitySerializer(serializers.ModelSerializer):

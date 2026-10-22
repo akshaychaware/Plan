@@ -76,6 +76,11 @@ class ApiTests(TrackerTestCase):
         monday = next(day for day in response.json() if day['dayOfWeek'] == 0)
         self.assertEqual([a['summary'] for a in monday['activities']],
                          ['Running — 5 km · 30 min', 'Hill Climbing — 6 reps'])
+        entry = self.dog.audit_entries.get(username='owner')
+        self.assertEqual([(c['field'], c['new']) for c in entry.changes],
+                         [('Monday', 'Running — 5 km · 30 min; Hill Climbing — 6 reps')])
+        self.api.put(url, [{'dayOfWeek': 0, 'activities': monday['activities']}], format='json')
+        self.assertEqual(self.dog.audit_entries.filter(username='owner').count(), 1)
 
     def test_plan_dates_are_validated(self):
         response = self.api.post('/api/training-plans', {

@@ -41,12 +41,14 @@ class TrainingSessionSerializer(serializers.ModelSerializer):
         if dog is None:
             raise serializers.ValidationError({'dog_id': 'Required when plannedActivityId is not given.'})
         day = validated_data.pop('date', None) or timezone.localdate()
-        return services.record_session(dog=dog, day=day, planned_activity=planned, **validated_data)
+        return services.record_session(
+            dog=dog, day=day, planned_activity=planned, user=self.context['request'].user, **validated_data
+        )
 
     def update(self, instance, validated_data):
         for immutable in ('dog', 'planned_activity', 'date'):
             validated_data.pop(immutable, None)
-        return services.save_session(instance, **validated_data)
+        return services.save_session(instance, self.context['request'].user, **validated_data)
 
 
 def serialize_day(dog, entry):
