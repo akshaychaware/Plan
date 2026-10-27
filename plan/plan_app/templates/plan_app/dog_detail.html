@@ -17,12 +17,14 @@
         </p>
       </div>
     </div>
-    <div class="row">
-      <a class="btn btn-secondary" href="{% url 'plan_app:session_record' dog.pk %}">
-        {% include 'plan_app/icon.html' with name='plus' %} {% translate "Record session" %}
-      </a>
-      <a class="btn btn-ghost hero-ghost" href="{% url 'plan_app:dog_edit' dog.pk %}">{% translate "Edit profile" %}</a>
-    </div>
+    {% if is_admin %}
+      <div class="row">
+        <a class="btn btn-secondary" href="{% url 'plan_app:session_record' dog.pk %}">
+          {% include 'plan_app/icon.html' with name='plus' %} {% translate "Record session" %}
+        </a>
+        <a class="btn btn-ghost hero-ghost" href="{% url 'plan_app:dog_edit' dog.pk %}">{% translate "Edit profile" %}</a>
+      </div>
+    {% endif %}
   </div>
   <div class="hero-pills">
     <span class="hero-pill">{% include 'plan_app/icon.html' with name='flame' %} {% blocktranslate with days=stats.streak %}{{ days }}-day streak{% endblocktranslate %}</span>
@@ -45,13 +47,15 @@
       {% empty %}
         <p class="muted m-0">
           {% translate "No training planned today." %}
-          {% if not plan and is_admin %}<a href="{% url 'plan_app:plan_edit' dog.pk %}">{% translate "Create a training plan" %}</a>.{% endif %}
+          {% if not plan and is_superuser %}<a href="{% url 'plan_app:plan_edit' dog.pk %}">{% translate "Create a training plan" %}</a>.{% endif %}
         </p>
       {% endfor %}
     </div>
-    <a class="add-link" href="{% url 'plan_app:session_record' dog.pk %}?date={{ today|date:'Y-m-d' }}&activity=extra">
-      {% include 'plan_app/icon.html' with name='plus' %} {% translate "Add an extra activity" %}
-    </a>
+    {% if is_admin %}
+      <a class="add-link" href="{% url 'plan_app:session_record' dog.pk %}?date={{ today|date:'Y-m-d' }}&activity=extra">
+        {% include 'plan_app/icon.html' with name='plus' %} {% translate "Add an extra activity" %}
+      </a>
+    {% endif %}
   </section>
 
   <div class="stack">
@@ -79,15 +83,15 @@
 <section class="card">
   <div class="card-header">
     <h2>{% translate "Recent & upcoming" %}</h2>
-    <a href="{% url 'plan_app:plan_edit' dog.pk %}">{% if is_admin %}{% translate "Edit plan" %}{% else %}{% translate "View plan" %}{% endif %}</a>
+    <a href="{% url 'plan_app:plan_edit' dog.pk %}">{% if is_superuser %}{% translate "Edit plan" %}{% else %}{% translate "View plan" %}{% endif %}</a>
   </div>
   <div class="week">
     {% for entry in days_window %}
       {% with first=entry.activities.0 %}
       {% firstof first.planned.exercise_type.name first.session.exercise_type.name as lead %}
       {% if entry.date <= today %}
-        <a class="day act-{{ lead|slugify }}{% if entry.date == today %} is-today{% else %} is-past{% endif %}"
-           href="{% url 'plan_app:session_record' dog.pk %}?date={{ entry.date|date:'Y-m-d' }}">
+        <{% if is_admin %}a{% else %}div{% endif %} class="day act-{{ lead|slugify }}{% if entry.date == today %} is-today{% else %} is-past{% endif %}"
+           {% if is_admin %}href="{% url 'plan_app:session_record' dog.pk %}?date={{ entry.date|date:'Y-m-d' }}"{% endif %}>
       {% else %}
         <div class="day is-upcoming act-{{ lead|slugify }}">
           <span class="day-watermark" aria-hidden="true">{% translate "Upcoming" %}</span>
@@ -106,7 +110,7 @@
               <li class="muted">{% translate "No plan" %}</li>
             {% endfor %}
           </ul>
-      {% if entry.date <= today %}</a>{% else %}</div>{% endif %}
+      {% if entry.date <= today and is_admin %}</a>{% else %}</div>{% endif %}
       {% endwith %}
     {% endfor %}
   </div>
@@ -188,7 +192,7 @@
   {% endif %}
 </section>
 
-{% if weigh_in.due %}
+{% if weigh_in.due and is_admin %}
   <dialog class="modal card" data-weigh-in-reminder="{{ dog.pk }}" aria-labelledby="weigh-in-title">
     <h2 id="weigh-in-title" class="mt-0">{% blocktranslate with name=dog.name|capfirst %}Time to weigh {{ name }}{% endblocktranslate %}</h2>
     <p class="muted">

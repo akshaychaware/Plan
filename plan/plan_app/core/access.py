@@ -13,7 +13,16 @@ def is_admin(user):
 
 def require_admin(user):
     if not is_admin(user):
-        raise PermissionDenied(gettext('Only administrators can change training plans.'))
+        raise PermissionDenied(gettext('Only administrators can make changes.'))
+
+
+def is_superuser(user):
+    return user.is_authenticated and user.is_superuser
+
+
+def require_superuser(user):
+    if not is_superuser(user):
+        raise PermissionDenied(gettext('Only superusers can change the plan or edit recorded sessions.'))
 
 
 def asset_version():
@@ -22,5 +31,8 @@ def asset_version():
 
 
 def access(request):
-    """Template context processor exposing the admin flag and the static asset version to every template."""
-    return {'is_admin': is_admin(request.user), 'asset_version': asset_version()}
+    """Template context processor exposing the admin/superuser flags and the static asset version to every template."""
+    return {
+        'is_admin': is_admin(request.user), 'is_superuser': is_superuser(request.user),
+        'asset_version': asset_version(),
+    }

@@ -11,7 +11,7 @@
 
 {% include 'plan_app/dog_tabs.html' %}
 
-{% if not is_admin %}
+{% if not is_superuser %}
   {% include 'plan_app/plan_readonly.html' %}
 {% else %}
 <form method="post" class="stack">

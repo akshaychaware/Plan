@@ -1,6 +1,8 @@
 from django.utils import timezone
 from rest_framework import serializers
+from rest_framework.exceptions import PermissionDenied
 
+from plan_app.core.access import is_superuser
 from plan_app.dog.models import Dog
 from plan_app.exercise.models import ExerciseType
 from plan_app.training_plan.models import PlannedActivity
@@ -41,9 +43,15 @@ class TrainingSessionSerializer(serializers.ModelSerializer):
         if dog is None:
             raise serializers.ValidationError({'dog_id': 'Required when plannedActivityId is not given.'})
         day = validated_data.pop('date', None) or timezone.localdate()
-        return services.record_session(
-            dog=dog, day=day, planned_activity=planned, user=self.context['request'].user, **validated_data
-        )
+        user = self.context['request'].user
+        if not is_superuser(user):
+            if day != timezone.localdate():
+                raise serializers.ValidationError({'date': 'Staff can only record sessions for today.'})
+            if planned and validated_data.get('exercise_type', planned.exercise_type) != planned.exercise_type:
+                raise serializers.ValidationError({'exercise_type_id': 'Staff cannot change the planned activity.'})
+            if planned and dog.sessions.filter(date=day, planned_activity=planned).exists():
+                raise PermissionDenied('Already recorded. Only superusers can edit recorded sessions.')
+        return services.record_session(dog=dog, day=day, planned_activity=planned, user=user, **validated_data)
 
     def update(self, instance, validated_data):
         for immutable in ('dog', 'planned_activity', 'date'):

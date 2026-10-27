@@ -44,7 +44,7 @@
               <td data-label="{% translate 'Notes' %}" class="span-full"><ul class="cell-list">
                 {% for session in day.sessions %}<li>{{ session.notes|linebreaksbr|default:"—" }}</li>{% endfor %}
               </ul></td>
-              {% if is_admin %}
+              {% if is_superuser %}
                 <td class="span-full"><ul class="cell-list">
                   {% for session in day.sessions %}
                     <li><a class="btn btn-secondary btn-sm" href="{% url 'plan_app:session_edit' dog.pk session.pk %}" aria-label="{% blocktranslate with name=session.exercise_type %}Edit {{ name }}{% endblocktranslate %}">{% translate "Edit" %}</a></li>
@@ -68,7 +68,7 @@
       <span class="brand-mark">{% include 'plan_app/icon.html' with name='list' %}</span>
       <h2>{% translate "No sessions yet" %}</h2>
       <p>{% translate "Record a session and it will show up here." %}</p>
-      <a class="btn" href="{% url 'plan_app:session_record' dog.pk %}">{% translate "Record session" %}</a>
+      {% if is_admin %}<a class="btn" href="{% url 'plan_app:session_record' dog.pk %}">{% translate "Record session" %}</a>{% endif %}
     </div>
   {% endif %}
 </div>

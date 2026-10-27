@@ -2,7 +2,7 @@ from rest_framework import mixins, permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from plan_app.core.api import IsAdminOrReadOnly
+from plan_app.core.api import IsSuperuserOrReadOnly
 
 from . import services
 from .models import TrainingPlan
@@ -14,7 +14,7 @@ class TrainingPlanViewSet(
     viewsets.GenericViewSet,
 ):
     serializer_class = TrainingPlanSerializer
-    permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated, IsSuperuserOrReadOnly]
 
     def get_queryset(self):
         plans = TrainingPlan.objects.all()

@@ -8,6 +8,7 @@
   </div>
   {% include 'plan_app/status_badge.html' with status=a.status label=a.status_label day=day %}
   <div class="activity-actions">
+    {% if is_admin %}
     {% if a.planned and not a.session and day == today %}
       <form method="post" action="{% url 'plan_app:session_quick_log' dog.pk a.planned.pk %}">
         {% csrf_token %}
@@ -15,9 +16,10 @@
       </form>
     {% endif %}
     {% if a.session %}
-      <a class="btn btn-secondary btn-sm" href="{% url 'plan_app:session_edit' dog.pk a.session.pk %}">{% translate "Edit" %}</a>
+      {% if is_superuser %}<a class="btn btn-secondary btn-sm" href="{% url 'plan_app:session_edit' dog.pk a.session.pk %}">{% translate "Edit" %}</a>{% endif %}
     {% elif day <= today %}
       <a class="btn btn-secondary btn-sm" href="{% url 'plan_app:session_record' dog.pk %}?date={{ day|date:'Y-m-d' }}&activity={{ a.planned.pk }}">{% translate "Record" %}</a>
+    {% endif %}
     {% endif %}
   </div>
 </div>

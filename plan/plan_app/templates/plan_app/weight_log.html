@@ -14,7 +14,8 @@
 {% include 'plan_app/dog_tabs.html' %}
 
 <div class="grid grid-2">
-  {% if weigh_in.due %}
+  {% if not is_admin %}
+  {% elif weigh_in.due %}
     <form method="post" class="card form-stack">
       {% csrf_token %}
       <div class="card-header"><h2>{% translate "Record weight" %}</h2></div>

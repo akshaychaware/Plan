@@ -11,7 +11,7 @@ from django.utils.formats import date_format
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_http_methods, require_POST
 
-from .core.access import require_admin
+from .core.access import is_superuser, require_admin, require_superuser
 from .dog import services as dog_services
 from .forms import (
     DogForm, NewTrainingPlanForm, PlannedActivityFormSet, TrainingPlanForm, TrainingSessionForm, WeightEntryForm,
@@ -34,6 +34,7 @@ def dog_list(request):
 @login_required
 @require_http_methods(['GET', 'POST'])
 def dog_form(request, pk=None):
+    require_admin(request.user)
     dog = _get_dog(request, pk) if pk else Dog(owner=request.user)
     form = DogForm(request.POST or None, instance=dog)
     if request.method == 'POST' and form.is_valid():
@@ -76,6 +77,8 @@ def dog_detail(request, pk):
 @require_http_methods(['GET', 'POST'])
 def weight_log(request, pk):
     dog = _get_dog(request, pk)
+    if request.method == 'POST':
+        require_admin(request.user)
     today = timezone.localdate()
     weigh_in = dog_services.weigh_in_status(dog, today)
     form = WeightEntryForm(request.POST or None, initial={'date': today})
@@ -104,6 +107,7 @@ def weight_log(request, pk):
 @login_required
 @require_POST
 def session_quick_log(request, pk, activity_pk):
+    require_admin(request.user)
     dog = _get_dog(request, pk)
     today = timezone.localdate()
     planned = plan_services.planned_activities_for(dog, today).filter(pk=activity_pk).first()
@@ -119,7 +123,7 @@ def session_quick_log(request, pk, activity_pk):
 def plan_edit(request, pk):
     dog = _get_dog(request, pk)
     if request.method == 'POST':
-        require_admin(request.user)
+        require_superuser(request.user)
     plan = plan_services.active_plan(dog) or TrainingPlan(dog=dog, start_date=timezone.localdate())
     days = {day.day_of_week: day for day in plan.days.all()} if plan.pk else {}
     plan_form = TrainingPlanForm(request.POST or None, instance=plan, prefix='plan')
@@ -153,7 +157,7 @@ def plan_edit(request, pk):
 @require_POST
 def plan_new(request, pk):
     dog = _get_dog(request, pk)
-    require_admin(request.user)
+    require_superuser(request.user)
     form = NewTrainingPlanForm(request.POST)
     if form.is_valid():
         try:
@@ -169,9 +173,11 @@ def plan_new(request, pk):
 @login_required
 @require_http_methods(['GET', 'POST'])
 def session_record(request, pk, session_pk=None):
+    require_admin(request.user)
     dog = _get_dog(request, pk)
     today = timezone.localdate()
     if session_pk:
+        require_superuser(request.user)
         session = get_object_or_404(dog.sessions, pk=session_pk)
         day = session.date
         entry = session_services.day_entries(dog, day)
@@ -192,6 +198,11 @@ def session_record(request, pk, session_pk=None):
             or next(iter(planned_items), None)
         )
         session = (match and match['session']) or TrainingSession.from_planned(dog, day, match and match['planned'])
+        if session.pk and not is_superuser(request.user):
+            messages.info(request, _('%(activity)s is already recorded. Only superusers can edit it.') % {
+                'activity': session.exercise_type,
+            })
+            return redirect(f"{reverse('plan_app:session_record', args=[dog.pk])}?date={day:%Y-%m-%d}&activity=extra")
 
     form = TrainingSessionForm(request.POST or None, instance=session)
     if request.method == 'POST' and form.is_valid():

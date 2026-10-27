@@ -1,11 +1,11 @@
 from datetime import date
 
 from django.utils import timezone
-from rest_framework import mixins, serializers, viewsets
+from rest_framework import mixins, permissions, serializers, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from plan_app.core.api import resolve_dog
+from plan_app.core.api import CanRecordSessions, resolve_dog
 
 from . import services
 from .models import TrainingSession
@@ -24,6 +24,7 @@ class TrainingSessionViewSet(
     viewsets.GenericViewSet,
 ):
     serializer_class = TrainingSessionSerializer
+    permission_classes = [permissions.IsAuthenticated, CanRecordSessions]
 
     def get_queryset(self):
         params = self.request.query_params

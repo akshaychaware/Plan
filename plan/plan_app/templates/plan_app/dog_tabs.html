@@ -3,9 +3,11 @@
   <a class="tab" href="{% url 'plan_app:dog_detail' dog.pk %}"{% if current == 'dog_detail' %} aria-current="page"{% endif %}>
     {% include 'plan_app/icon.html' with name='home' %}<span>{% translate "Dashboard" %}</span>
   </a>
-  <a class="tab" href="{% url 'plan_app:session_record' dog.pk %}"{% if current == 'session_record' %} aria-current="page"{% endif %}>
-    {% include 'plan_app/icon.html' with name='plus' %}<span>{% translate "Record" %}</span>
-  </a>
+  {% if is_admin %}
+    <a class="tab" href="{% url 'plan_app:session_record' dog.pk %}"{% if current == 'session_record' %} aria-current="page"{% endif %}>
+      {% include 'plan_app/icon.html' with name='plus' %}<span>{% translate "Record" %}</span>
+    </a>
+  {% endif %}
   <a class="tab" href="{% url 'plan_app:plan_edit' dog.pk %}"{% if current == 'plan_edit' %} aria-current="page"{% endif %}>
     {% include 'plan_app/icon.html' with name='calendar' %}<span>{% translate "Plan" %}</span>
   </a>

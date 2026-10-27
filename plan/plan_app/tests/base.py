@@ -10,14 +10,17 @@ from plan_app.training_plan.services import planned_activities_for, save_plan, s
 
 
 class TrackerTestCase(TestCase):
-    """`user` is an admin (staff), `other_user` a normal user.
+    """`user` is a superuser, `staff_user` an admin (staff) and `other_user` a normal user.
 
     Luna has an active plan with Swimming (20 min) then Walking (1 km) today and Rest tomorrow.
     """
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = get_user_model().objects.create_user('owner', password='test-pass-123', is_staff=True)
+        cls.user = get_user_model().objects.create_user(
+            'owner', password='test-pass-123', is_staff=True, is_superuser=True
+        )
+        cls.staff_user = get_user_model().objects.create_user('staff', password='test-pass-123', is_staff=True)
         cls.other_user = get_user_model().objects.create_user('other', password='test-pass-123')
         cls.dog = Dog.objects.create(owner=cls.user, name='Luna')
         cls.types = {exercise.name: exercise for exercise in ExerciseType.objects.all()}
