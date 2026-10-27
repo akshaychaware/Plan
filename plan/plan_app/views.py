@@ -14,7 +14,8 @@ from django.views.decorators.http import require_http_methods, require_POST
 from .core.access import is_superuser, require_admin, require_superuser
 from .dog import services as dog_services
 from .forms import (
-    DogForm, NewTrainingPlanForm, PlannedActivityFormSet, TrainingPlanForm, TrainingSessionForm, WeightEntryForm,
+    DogForm, NewTrainingPlanForm, PlannedActivityForm, PlannedActivityFormSet, TrainingPlanForm, TrainingSessionForm,
+    WeightEntryForm,
 )
 from .models import Dog, TrainingPlan, TrainingSession, TrainingPlanDay, Weekday
 from .statistics.services import PERIODS, calorie_goal_progress, personal_records, summarize, week_progress
@@ -53,17 +54,20 @@ def dog_detail(request, pk):
     today = timezone.localdate()
     period = request.GET.get('period', 'week')
     period = period if period in PERIODS else 'week'
-    week = session_services.week_overview(dog, today)
+    week, days_window, month = session_services.overviews(
+        dog, session_services.week_range(today), (today - timedelta(days=2), today + timedelta(days=3)),
+        session_services.month_range(today),
+    )
     progress = week_progress(week)
     return render(request, 'plan_app/dog_detail.html', {
         'dog': dog,
         'today': today,
         'today_entry': week[today.weekday()],
         'week': week,
-        'days_window': session_services.overview(dog, today - timedelta(days=2), today + timedelta(days=3)),
+        'days_window': days_window,
         'progress': progress,
         'calorie_goal': calorie_goal_progress(progress['calories'], dog.weekly_calorie_goal_kcal),
-        'month_progress': week_progress(session_services.month_overview(dog, today)),
+        'month_progress': week_progress(month),
         'stats': summarize(dog, period, today),
         'records': personal_records(dog, today),
         'weigh_in': dog_services.weigh_in_status(dog, today),
@@ -125,13 +129,15 @@ def plan_edit(request, pk):
     if request.method == 'POST':
         require_superuser(request.user)
     plan = plan_services.active_plan(dog) or TrainingPlan(dog=dog, start_date=timezone.localdate())
-    days = {day.day_of_week: day for day in plan.days.all()} if plan.pk else {}
+    days = {day.day_of_week: day for day in plan.days.prefetch_related('activities')} if plan.pk else {}
     plan_form = TrainingPlanForm(request.POST or None, instance=plan, prefix='plan')
+    exercise_choices = list(PlannedActivityForm.base_fields['exercise_type'].choices)
     formsets = [
         PlannedActivityFormSet(
             request.POST or None,
             instance=days.get(day, TrainingPlanDay(training_plan=plan, day_of_week=day)),
             prefix=f'day{day}',
+            form_kwargs={'exercise_choices': exercise_choices},
         )
         for day in Weekday.values
     ]

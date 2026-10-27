@@ -5,7 +5,7 @@ from django.utils.translation import gettext
 
 from plan_app.core.models import METRICS, AuditEntry
 from plan_app.exercise.models import ExerciseType
-from plan_app.training_plan.services import planned_activities_for
+from plan_app.training_plan.services import planned_activities_by_date, planned_activities_for
 
 from .models import TrainingSession
 
@@ -16,13 +16,15 @@ def status_label(status):
     return Status(status).label if status in Status.values else gettext('Planned')
 
 
-def day_entries(dog, day, sessions=None):
+def day_entries(dog, day, sessions=None, planned_activities=None):
     """Planned activities for `day` paired with their recorded sessions, plus any unplanned sessions."""
     if sessions is None:
         sessions = list(dog.sessions.select_related('exercise_type', 'planned_exercise_type').filter(date=day))
+    if planned_activities is None:
+        planned_activities = planned_activities_for(dog, day)
     by_planned = {s.planned_activity_id: s for s in sessions if s.planned_activity_id}
     activities = []
-    for planned in planned_activities_for(dog, day):
+    for planned in planned_activities:
         session = by_planned.pop(planned.pk, None)
         activities.append({'planned': planned, 'session': session})
     activities += [
@@ -40,17 +42,32 @@ def overview(dog, start, end):
     sessions = list(
         dog.sessions.select_related('exercise_type', 'planned_exercise_type').filter(date__range=(start, end))
     )
-    return [day_entries(dog, d, [s for s in sessions if s.date == d]) for d in days]
+    planned = planned_activities_by_date(dog, days)
+    return [day_entries(dog, d, [s for s in sessions if s.date == d], planned[d]) for d in days]
+
+
+def overviews(dog, *ranges):
+    """`overview` for several (start, end) ranges, loading the data once for their combined span."""
+    by_date = {entry['date']: entry for entry in overview(dog, min(r[0] for r in ranges), max(r[1] for r in ranges))}
+    return [[by_date[start + timedelta(days=n)] for n in range((end - start).days + 1)] for start, end in ranges]
+
+
+def week_range(day):
+    monday = day - timedelta(days=day.weekday())
+    return monday, monday + timedelta(days=6)
+
+
+def month_range(day):
+    first = day.replace(day=1)
+    return first, (first + timedelta(days=32)).replace(day=1) - timedelta(days=1)
 
 
 def week_overview(dog, day):
-    monday = day - timedelta(days=day.weekday())
-    return overview(dog, monday, monday + timedelta(days=6))
+    return overview(dog, *week_range(day))
 
 
 def month_overview(dog, day):
-    first = day.replace(day=1)
-    return overview(dog, first, (first + timedelta(days=32)).replace(day=1) - timedelta(days=1))
+    return overview(dog, *month_range(day))
 
 
 def history_days(sessions, dates):

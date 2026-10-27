@@ -37,6 +37,28 @@ def planned_activities_for(dog, day):
     )
 
 
+def planned_activities_by_date(dog, days):
+    """`planned_activities_for` for every date in `days` using two queries instead of two per date."""
+    if not days:
+        return {}
+    plans = list(
+        dog.training_plans.filter(start_date__lte=max(days))
+        .filter(Q(end_date__isnull=True) | Q(end_date__gte=min(days)))
+        .order_by('-is_active', '-start_date')
+    )
+    by_plan_day = {}
+    for activity in PlannedActivity.objects.select_related('exercise_type', 'training_plan_day').filter(
+        training_plan_day__training_plan__in=plans
+    ):
+        key = (activity.training_plan_day.training_plan_id, activity.training_plan_day.day_of_week)
+        by_plan_day.setdefault(key, []).append(activity)
+    result = {}
+    for day in days:
+        plan = next((p for p in plans if p.start_date <= day and (p.end_date is None or p.end_date >= day)), None)
+        result[day] = by_plan_day.get((plan.pk, day.weekday()), []) if plan else []
+    return result
+
+
 def ensure_days(plan):
     days = {day.day_of_week: day for day in plan.days.all()}
     for day_of_week in Weekday.values:

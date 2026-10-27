@@ -83,8 +83,11 @@ def summarize(dog, period='all', today=None):
         total_minutes=Sum('actual_duration_minutes'),
         total_distance_km=Sum('actual_distance_km'),
         total_calories_kcal=Sum('calories_kcal'),
+        training_days=Count('date', distinct=True, filter=Q(exercise_type__tracks_metrics=True)),
+        rest_days=Count(
+            'date', distinct=True, filter=Q(exercise_type__tracks_metrics=False) & ~Q(status=Status.SKIPPED)
+        ),
     )
-    distinct_days = sessions.order_by().values('date').distinct()
     by_exercise = list(
         sessions.exclude(status=Status.SKIPPED)
         .values(exercise=F('exercise_type__name'))
@@ -104,8 +107,6 @@ def summarize(dog, period='all', today=None):
         period=period,
         start_date=start,
         end_date=today,
-        training_days=distinct_days.filter(exercise_type__tracks_metrics=True).count(),
-        rest_days=distinct_days.filter(exercise_type__tracks_metrics=False).exclude(status=Status.SKIPPED).count(),
         completion_rate=round(100 * stats['completed'] / stats['total']) if stats['total'] else 0,
         streak=current_streak(dog, today),
         by_exercise=by_exercise,

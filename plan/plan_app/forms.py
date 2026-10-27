@@ -49,9 +49,22 @@ class PlannedActivityForm(forms.ModelForm):
             'notes': forms.TextInput(attrs={'placeholder': _('e.g. 10 min + 5 min rest + 10 min')}),
         }
 
+    def __init__(self, *args, exercise_choices=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if exercise_choices is not None:
+            self.fields['exercise_type'].choices = exercise_choices
+
+
+class BasePlannedActivityFormSet(forms.BaseInlineFormSet):
+    def get_queryset(self):
+        if 'activities' in getattr(self.instance, '_prefetched_objects_cache', {}):
+            return self.instance.activities.all()
+        return super().get_queryset()
+
 
 PlannedActivityFormSet = forms.inlineformset_factory(
-    TrainingPlanDay, PlannedActivity, form=PlannedActivityForm, extra=0, can_delete=True
+    TrainingPlanDay, PlannedActivity, form=PlannedActivityForm, formset=BasePlannedActivityFormSet,
+    extra=0, can_delete=True,
 )
 
 
