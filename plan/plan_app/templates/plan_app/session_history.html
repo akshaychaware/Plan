@@ -2,6 +2,10 @@
 {% load i18n %}
 {% block title %}{% translate "History" %} · {{ dog.name }}{% endblock %}
 {% block content %}
+<a class="back-link" href="{% url 'plan_app:dog_list' %}">
+  {% include 'plan_app/icon.html' with name='arrow-left' %} {% translate "All dogs" %}
+</a>
+
 <div>
   <h1>{% translate "Training history" %}</h1>
   <p class="muted m-0">{% blocktranslate with name=dog.name|capfirst %}Every recorded session for {{ name }}, planned vs actual, exactly as it was at the time.{% endblocktranslate %}</p>

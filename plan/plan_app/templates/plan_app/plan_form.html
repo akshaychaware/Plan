@@ -2,6 +2,10 @@
 {% load i18n %}
 {% block title %}{% translate "Training plan" %} · {{ dog.name }}{% endblock %}
 {% block content %}
+<a class="back-link" href="{% url 'plan_app:dog_list' %}">
+  {% include 'plan_app/icon.html' with name='arrow-left' %} {% translate "All dogs" %}
+</a>
+
 <div>
   <h1>{% translate "Training plan" %}</h1>
   <p class="muted m-0">
