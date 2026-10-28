@@ -13,7 +13,10 @@
   <link rel="stylesheet" href="{% static 'plan_app/style.css' %}?v={{ asset_version }}">
   <script src="{% static 'plan_app/app.js' %}?v={{ asset_version }}" defer></script>
   <script type="speculationrules">
-    {"prefetch": [{"where": {"and": [{"href_matches": "/*"}, {"not": {"href_matches": ["/admin/*", "/api/*", "/accounts/*", "/i18n/*", "/sw.js"]}}]}, "eagerness": "moderate"}]}
+    {"prefetch": [
+      {"where": {"selector_matches": ".tabs a:not([aria-current]), a.dog-card, a.back-link, a.brand"}, "eagerness": "immediate"},
+      {"where": {"and": [{"href_matches": "/*"}, {"not": {"href_matches": ["/admin/*", "/api/*", "/accounts/*", "/i18n/*", "/sw.js"]}}]}, "eagerness": "moderate"}
+    ]}
   </script>
 </head>
 <body data-service-worker="{% url 'plan_app:service_worker' %}"{% if not dog.pk %} class="no-tabbar"{% endif %}>

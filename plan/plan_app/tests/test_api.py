@@ -7,6 +7,7 @@ from .base import TrackerTestCase
 
 class ApiTests(TrackerTestCase):
     def setUp(self):
+        super().setUp()
         self.api = APIClient()
         self.api.force_authenticate(self.user)
 
@@ -18,13 +19,11 @@ class ApiTests(TrackerTestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.json()['weightKg'], '28.125')
         self.assertTrue(Dog.objects.filter(name='Aayesha', owner=self.user).exists())
-        self.assertEqual(self.api.patch(f'/api/dogs/{self.dog.pk}', {'notes': 'Fit'}, format='json').status_code, 200)
         self.api.force_authenticate(self.other_user)
         self.assertEqual(self.api.get(f'/api/dogs/{self.dog.pk}').status_code, 200)
-        self.assertEqual(self.api.patch(f'/api/dogs/{self.dog.pk}', {'notes': 'Lazy'}, format='json').status_code, 403)
-        self.assertEqual(self.api.post('/api/dogs', {'name': 'Rex'}, format='json').status_code, 403)
+        self.assertEqual(self.api.patch(f'/api/dogs/{self.dog.pk}', {'notes': 'Fit'}, format='json').status_code, 200)
 
-    def test_normal_users_are_read_only(self):
+    def test_normal_users_cannot_change_exercise_types_or_plans(self):
         self.api.force_authenticate(self.other_user)
         self.assertEqual(self.api.get('/api/exercise-types').status_code, 200)
         self.assertEqual(self.api.post('/api/exercise-types', {'name': 'Sprint'}, format='json').status_code, 403)
@@ -33,21 +32,7 @@ class ApiTests(TrackerTestCase):
         self.assertEqual(self.api.post(f'/api/training-plans/{self.plan.pk}/activate').status_code, 403)
         response = self.api.post('/api/training/sessions', {'plannedActivityId': self.swim.pk, 'status': 'COMPLETED'},
                                  format='json')
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(self.api.get('/api/training/history').status_code, 200)
-        self.assertEqual(self.api.get('/api/training/today').status_code, 200)
-
-    def test_staff_records_but_cannot_change_plans_or_sessions(self):
-        self.api.force_authenticate(self.staff_user)
-        self.assertEqual(self.api.put(f'/api/training-plans/{self.plan.pk}/days', [], format='json').status_code, 403)
-        self.assertEqual(self.api.post(f'/api/training-plans/{self.plan.pk}/activate').status_code, 403)
-        record = {'plannedActivityId': self.swim.pk, 'status': 'COMPLETED'}
-        response = self.api.post('/api/training/sessions', record, format='json')
-        self.assertEqual(response.status_code, 201, response.content)
-        self.assertEqual(self.api.post('/api/training/sessions', record, format='json').status_code, 403)
-        session_url = f"/api/training/sessions/{response.json()['id']}"
-        self.assertEqual(self.api.patch(session_url, {'status': 'SKIPPED'}, format='json').status_code, 403)
-        self.assertEqual(self.api.patch(f'/api/dogs/{self.dog.pk}', {'notes': 'Fit'}, format='json').status_code, 200)
+        self.assertEqual(response.status_code, 201)
 
     def test_today_record_and_history_flow(self):
         today = self.api.get('/api/training/today').json()

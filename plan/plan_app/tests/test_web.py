@@ -10,6 +10,7 @@ from .base import TrackerTestCase
 
 class WebTests(TrackerTestCase):
     def setUp(self):
+        super().setUp()
         self.client.force_login(self.user)
 
     def url(self, name, *args):
@@ -18,62 +19,41 @@ class WebTests(TrackerTestCase):
     def record_url(self, day, activity=''):
         return f"{self.url('session_record')}?date={day:%Y-%m-%d}&activity={activity}"
 
+    def test_dashboard_is_cached_until_training_data_changes(self):
+        self.client.get(self.url('dog_detail'))
+        with self.assertNumQueries(2):
+            self.client.get(self.url('dog_detail'))
+        self.client.post(self.url('session_quick_log', self.swim.pk))
+        entry = self.client.get(self.url('dog_detail')).context['today_entry']
+        self.assertEqual(entry['activities'][0]['status'], 'COMPLETED')
+
     def test_login_required(self):
         self.client.logout()
         self.assertRedirects(self.client.get(self.url('dog_detail')), f"{reverse('login')}?next=/dogs/{self.dog.pk}/")
 
-    def test_normal_user_is_read_only(self):
+    def test_normal_user_sees_everything_but_plan_and_history_are_read_only(self):
+        self.client.force_login(self.other_user)
+        self.assertContains(self.client.get(reverse('plan_app:dog_list')), 'Luna')
+        self.assertContains(self.client.get(self.url('dog_detail')), 'View plan')
+
+        plan_page = self.client.get(self.url('plan_edit'))
+        self.assertContains(plan_page, 'Read only')
+        self.assertNotContains(plan_page, 'day0-TOTAL_FORMS')
+        self.assertEqual(self.client.post(self.url('plan_edit'), {}).status_code, 403)
+        self.assertEqual(self.client.post(self.url('plan_new'), {}).status_code, 403)
+
         self.client.post(self.url('session_quick_log', self.swim.pk))
         session = self.dog.sessions.get()
-        self.client.force_login(self.other_user)
-        dog_list = self.client.get(reverse('plan_app:dog_list'))
-        self.assertContains(dog_list, 'Luna')
-        self.assertNotContains(dog_list, reverse('plan_app:dog_create'))
-        dashboard = self.client.get(self.url('dog_detail'))
-        self.assertContains(dashboard, 'View plan')
-        for hidden in (self.url('session_record'), self.url('dog_edit'), self.url('session_quick_log', self.walk.pk),
-                       'data-weigh-in-reminder'):
-            self.assertNotContains(dashboard, hidden)
-
-        plan_page = self.client.get(self.url('plan_edit'))
-        self.assertContains(plan_page, 'Read only')
-        self.assertNotContains(plan_page, 'day0-TOTAL_FORMS')
         self.assertNotContains(self.client.get(self.url('session_history')), self.url('session_edit', session.pk))
-        self.assertNotContains(self.client.get(self.url('weight_log')), 'Save weigh-in')
-
-        for url in (self.url('session_record'), self.url('session_edit', session.pk), self.url('dog_edit'),
-                    reverse('plan_app:dog_create')):
-            self.assertEqual(self.client.get(url).status_code, 403)
-        for url in (self.url('plan_edit'), self.url('plan_new'), self.url('session_quick_log', self.walk.pk),
-                    self.url('session_edit', session.pk), self.url('weight_log'), self.url('dog_edit')):
-            self.assertEqual(self.client.post(url, {}).status_code, 403)
-        self.assertEqual((self.dog.sessions.count(), self.dog.weights.count()), (1, 0))
-
-    def test_staff_records_but_cannot_change_plan_or_history(self):
-        self.client.force_login(self.staff_user)
-        self.assertRedirects(self.client.post(self.url('session_quick_log', self.swim.pk)), self.url('dog_detail'))
-        session = self.dog.sessions.get()
-        dashboard = self.client.get(self.url('dog_detail'))
-        for shown in (self.url('dog_edit'), self.url('session_quick_log', self.walk.pk), 'activity=extra', 'View plan'):
-            self.assertContains(dashboard, shown)
-        self.assertNotContains(dashboard, self.url('session_edit', session.pk))
-
-        plan_page = self.client.get(self.url('plan_edit'))
-        self.assertContains(plan_page, 'Read only')
-        self.assertNotContains(plan_page, 'day0-TOTAL_FORMS')
-        self.assertNotContains(self.client.get(self.url('session_history')), self.url('session_edit', session.pk))
-        self.assertEqual(self.client.get(self.url('session_edit', session.pk)).status_code, 403)
-        for url in (self.url('plan_edit'), self.url('plan_new'), self.url('session_edit', session.pk)):
-            self.assertEqual(self.client.post(url, {}).status_code, 403)
-
-        self.assertRedirects(self.client.post(self.record_url(self.today, self.swim.pk), {
-            'exercise_type': self.swim.exercise_type_id, 'status': 'SKIPPED',
-        }), self.record_url(self.today, 'extra'))
+        response = self.client.post(self.url('session_edit', session.pk), {
+            'exercise_type': self.swim.exercise_type_id, 'status': 'PARTIALLY_COMPLETED', 'actual_duration_minutes': 12,
+        })
+        self.assertEqual(response.status_code, 302)
         session.refresh_from_db()
-        self.assertEqual(session.status, 'COMPLETED')
-        self.assertEqual(self.client.get(self.url('dog_edit')).status_code, 200)
+        self.assertEqual(session.status, 'PARTIALLY_COMPLETED')
 
     def test_weight_log_and_weigh_in_reminder(self):
+        self.client.force_login(self.other_user)
         self.assertContains(self.client.get(self.url('dog_detail')), 'data-weigh-in-reminder')
         response = self.client.post(self.url('weight_log'), {'date': f'{self.today:%Y-%m-%d}', 'weight_kg': '25.2'})
         self.assertRedirects(response, self.url('weight_log'))
@@ -192,8 +172,11 @@ class WebTests(TrackerTestCase):
         self.assertEqual(response.context['calorie_goal']['remaining'], Decimal('2.5'))
 
     def test_audit_log_records_who_changed_sessions_and_plans(self):
+        self.client.force_login(self.other_user)
         self.client.post(self.url('session_quick_log', self.swim.pk))
         session = self.dog.sessions.get()
+
+        self.client.force_login(self.user)
         self.client.post(self.url('session_edit', session.pk), {
             'exercise_type': self.swim.exercise_type_id, 'status': 'PARTIALLY_COMPLETED', 'actual_duration_minutes': 12,
         })
@@ -203,7 +186,7 @@ class WebTests(TrackerTestCase):
         self.client.post(self.url('plan_new'), {'name': 'Winter', 'start_date': f'{self.today:%Y-%m-%d}'})
 
         created, updated = self.dog.audit_entries.filter(target='SESSION').order_by('id')
-        self.assertEqual((created.action, created.username), ('CREATED', 'owner'))
+        self.assertEqual((created.action, created.username), ('CREATED', 'other'))
         self.assertEqual((updated.action, updated.username), ('UPDATED', 'owner'))
         self.assertEqual(updated.changes, [
             {'field': 'status', 'old': 'Completed', 'new': 'Partially completed'},

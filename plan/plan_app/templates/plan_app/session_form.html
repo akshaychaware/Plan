@@ -14,13 +14,11 @@
     {% firstof a.planned.exercise_type.name a.session.exercise_type.name as name %}
     {% if a.planned %}
       <a class="chip act-{{ name|slugify }}" href="{% url 'plan_app:session_record' dog.pk %}?date={{ day|date:'Y-m-d' }}&activity={{ a.planned.pk }}"{% if a.planned.pk == session.planned_activity_id %} aria-current="true"{% endif %}>
-    {% elif is_superuser %}
-      <a class="chip act-{{ name|slugify }}" href="{% url 'plan_app:session_edit' dog.pk a.session.pk %}"{% if a.session.pk == session.pk %} aria-current="true"{% endif %}>
     {% else %}
-      <span class="chip act-{{ name|slugify }}">
+      <a class="chip act-{{ name|slugify }}" href="{% url 'plan_app:session_edit' dog.pk a.session.pk %}"{% if a.session.pk == session.pk %} aria-current="true"{% endif %}>
     {% endif %}
         <span class="dot"></span>{% translate name %}<span class="mini-status status-{{ a.status|lower }}" title="{{ a.status_label }}"></span>
-      {% if a.planned or is_superuser %}</a>{% else %}</span>{% endif %}
+      </a>
   {% endfor %}
   <a class="chip" href="{% url 'plan_app:session_record' dog.pk %}?date={{ day|date:'Y-m-d' }}&activity=extra"{% if not session.pk and not session.planned_activity_id %} aria-current="true"{% endif %}>
     {% include 'plan_app/icon.html' with name='plus' %} {% translate "Extra activity" %}

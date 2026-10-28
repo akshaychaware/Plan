@@ -5,7 +5,7 @@ from rest_framework.views import exception_handler as drf_exception_handler
 
 from plan_app.dog.models import Dog
 
-from .access import is_admin, is_superuser
+from .access import is_admin
 
 
 def exception_handler(exc, context):
@@ -21,20 +21,6 @@ def exception_handler(exc, context):
 class IsAdminOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.method in permissions.SAFE_METHODS or is_admin(request.user)
-
-
-class IsSuperuserOrReadOnly(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return request.method in permissions.SAFE_METHODS or is_superuser(request.user)
-
-
-class CanRecordSessions(permissions.BasePermission):
-    """Admins (staff) may record new sessions; only superusers may edit recorded ones."""
-
-    def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        return is_admin(request.user) if request.method == 'POST' else is_superuser(request.user)
 
 
 def resolve_dog(request):

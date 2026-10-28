@@ -6,7 +6,7 @@
     <h1>{% translate "Dogs" %}</h1>
     <p class="muted m-0">{% translate "Pick a dog to see today’s training, the week and progress." %}</p>
   </div>
-  {% if is_admin %}<a class="btn" href="{% url 'plan_app:dog_create' %}">{% include 'plan_app/icon.html' with name='plus' %} {% translate "Add dog" %}</a>{% endif %}
+  <a class="btn" href="{% url 'plan_app:dog_create' %}">{% include 'plan_app/icon.html' with name='plus' %} {% translate "Add dog" %}</a>
 </div>
 
 {% if dogs %}
@@ -27,7 +27,7 @@
     <span class="brand-mark">{% include 'plan_app/icon.html' with name='paw' %}</span>
     <h2>{% translate "No dogs yet" %}</h2>
     <p>{% translate "Add your first dog to start planning training." %}</p>
-    {% if is_admin %}<a class="btn" href="{% url 'plan_app:dog_create' %}">{% translate "Add your first dog" %}</a>{% endif %}
+    <a class="btn" href="{% url 'plan_app:dog_create' %}">{% translate "Add your first dog" %}</a>
   </div>
 {% endif %}
 {% endblock %}

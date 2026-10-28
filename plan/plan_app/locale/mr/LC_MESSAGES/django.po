@@ -177,15 +177,8 @@ msgstr "नियोजित पुनरावृत्ती"
 msgid "End date must be on or after the start date."
 msgstr "शेवटची तारीख सुरुवातीच्या तारखेला किंवा त्यानंतर असावी."
 
-msgid "Only administrators can make changes."
-msgstr "फक्त प्रशासक बदल करू शकतात."
-
-msgid "Only superusers can change the plan or edit recorded sessions."
-msgstr "फक्त सुपरयूजर योजना बदलू शकतात किंवा नोंदवलेली सत्रे संपादित करू शकतात."
-
-#, python-format
-msgid "%(activity)s is already recorded. Only superusers can edit it."
-msgstr "%(activity)s आधीच नोंदवले आहे. फक्त सुपरयूजर ते संपादित करू शकतात."
+msgid "Only administrators can change training plans."
+msgstr "फक्त प्रशासक प्रशिक्षण योजना बदलू शकतात."
 
 msgid "No plan"
 msgstr "योजना नाही"
