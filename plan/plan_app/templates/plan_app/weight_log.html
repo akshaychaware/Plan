@@ -1,5 +1,5 @@
 {% extends 'plan_app/base.html' %}
-{% load i18n %}
+{% load i18n l10n %}
 {% block title %}{% translate "Weight" %} · {{ dog.name }}{% endblock %}
 {% block content %}
 <div>
@@ -15,7 +15,7 @@
 
 <div class="grid grid-2">
   {% if weigh_in.due %}
-    <form method="post" class="card form-stack">
+    <form method="post" class="card form-stack" data-guard>
       {% csrf_token %}
       <div class="card-header"><h2>{% translate "Record weight" %}</h2></div>
       {{ form }}
@@ -34,12 +34,13 @@
 
   <div class="card">
     {% if log.rows %}
+      {% if log.rows|length > 1 %}<svg class="sparkline" data-sparkline role="img" aria-label="{% translate 'Weight' %}"></svg>{% endif %}
       <div class="table-wrap">
         <table class="table-responsive">
           <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Weight" %}</th><th>{% translate "Change" %}</th><th>{% translate "Calories burned" %}</th><th>{% translate "Notes" %}</th></tr></thead>
           <tbody>
             {% for row in log.rows %}
-              <tr>
+              <tr data-weight="{{ row.entry.weight_kg|unlocalize }}" data-date="{{ row.entry.date|date:'j M Y' }}">
                 <th scope="row">{{ row.entry.date|date:"D, j M Y" }}</th>
                 <td data-label="{% translate 'Weight' %}"><strong>{{ row.entry.weight_kg|floatformat:"-3" }} kg</strong></td>
                 <td data-label="{% translate 'Change' %}">{% if row.change_kg is not None %}{% if row.change_kg > 0 %}+{% endif %}{{ row.change_kg|floatformat:"-3" }} kg{% else %}—{% endif %}</td>

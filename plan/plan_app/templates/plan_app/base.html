@@ -36,8 +36,9 @@
             <button class="btn btn-ghost btn-sm" name="language" value="mr" lang="mr" title="{% translate 'Language' %}">मराठी</button>
           {% endif %}
         </form>
-        <button type="button" class="btn btn-ghost btn-icon" data-theme-toggle aria-label="{% translate 'Toggle dark mode' %}">
-          {% include 'plan_app/icon.html' with name='moon' %}
+        <button type="button" class="btn btn-ghost btn-icon theme-toggle" data-theme-toggle aria-label="{% translate 'Toggle dark mode' %}">
+          <span class="show-light">{% include 'plan_app/icon.html' with name='moon' %}</span>
+          <span class="show-dark">{% include 'plan_app/icon.html' with name='sun' %}</span>
         </button>
         {% if user.is_authenticated %}
           <span class="user-chip"><span class="user-name">{{ user.get_username }}</span></span>

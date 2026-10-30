@@ -1,8 +1,37 @@
 const root = document.documentElement;
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const animates = !reducedMotion && 'IntersectionObserver' in window;
 
-document.querySelector('[data-theme-toggle]')?.addEventListener('click', () => {
+const onVisible = (elements, callback, threshold = 0.4) => {
+  if (!elements.length || !animates) return;
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      observer.unobserve(entry.target);
+      callback(entry.target);
+    });
+  }, { threshold });
+  elements.forEach((element) => observer.observe(element));
+};
+
+document.querySelector('[data-theme-toggle]')?.addEventListener('click', (event) => {
+  const button = event.currentTarget;
   const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
-  root.dataset.theme = next;
+  const apply = () => {
+    root.dataset.theme = next;
+  };
+  button.classList.remove('is-switching');
+  void button.offsetWidth;
+  button.classList.add('is-switching');
+  if (document.startViewTransition && !reducedMotion) {
+    const rect = button.getBoundingClientRect();
+    root.style.setProperty('--reveal-x', `${rect.left + rect.width / 2}px`);
+    root.style.setProperty('--reveal-y', `${rect.top + rect.height / 2}px`);
+    root.classList.add('theme-reveal');
+    document.startViewTransition(apply).finished.finally(() => root.classList.remove('theme-reveal'));
+  } else {
+    apply();
+  }
   try {
     localStorage.setItem('theme', next);
   } catch {}
@@ -28,7 +57,19 @@ const dismiss = (alert) => {
 };
 document.querySelectorAll('.alert').forEach((alert) => {
   alert.querySelector('button')?.addEventListener('click', () => dismiss(alert));
-  setTimeout(() => dismiss(alert), 5000);
+  let remaining = 5000;
+  let started = 0;
+  let timer = 0;
+  const run = () => {
+    started = Date.now();
+    timer = setTimeout(() => dismiss(alert), remaining);
+  };
+  alert.addEventListener('pointerenter', () => {
+    clearTimeout(timer);
+    remaining -= Date.now() - started;
+  });
+  alert.addEventListener('pointerleave', run);
+  run();
 });
 
 document.querySelectorAll('form[method="post"]').forEach((form) => {
@@ -90,6 +131,20 @@ document.querySelectorAll('[data-add-activity]').forEach((button) => {
   });
 });
 
+document.querySelectorAll('form[data-guard]').forEach((form) => {
+  const snapshot = () => new URLSearchParams(new FormData(form)).toString();
+  const initial = snapshot();
+  let submitting = false;
+  form.addEventListener('submit', () => {
+    submitting = true;
+  });
+  window.addEventListener('beforeunload', (event) => {
+    if (submitting || snapshot() === initial) return;
+    event.preventDefault();
+    event.returnValue = '';
+  });
+});
+
 const animateRing = (ring) => {
   const target = Number(ring.dataset.progress) || 0;
   const label = ring.querySelector('span');
@@ -100,12 +155,40 @@ const animateRing = (ring) => {
     ring.style.setProperty('--value', value);
     label.textContent = `${Math.round(value)}%`;
     if (t < 1) requestAnimationFrame(step);
+    else if (target >= 100) ring.classList.add('is-complete');
   };
   requestAnimationFrame(step);
 };
 
+const countUp = (element) => {
+  const text = element.textContent;
+  const match = text.match(/\d+(?:\.\d+)?/);
+  const target = match ? Number(match[0]) : 0;
+  if (!target) return;
+  const decimals = (match[0].split('.')[1] || '').length;
+  const before = text.slice(0, match.index);
+  const after = text.slice(match.index + match[0].length);
+  const render = (value) => {
+    element.textContent = before + value.toFixed(decimals) + after;
+  };
+  render(0);
+  onVisible([element], () => {
+    const start = performance.now();
+    const step = (now) => {
+      const t = Math.min((now - start) / 900, 1);
+      if (t < 1) {
+        render(target * (1 - (1 - t) ** 3));
+        requestAnimationFrame(step);
+      } else {
+        element.textContent = text;
+      }
+    };
+    requestAnimationFrame(step);
+  });
+};
+if (animates) document.querySelectorAll('.stat-value').forEach(countUp);
+
 const dogCards = document.querySelectorAll('.dog-card');
-const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const setGlare = (card, event) => {
   const rect = card.getBoundingClientRect();
   const x = (event.clientX - rect.left) / rect.width;
@@ -150,20 +233,58 @@ if (dogCards.length && !reducedMotion && matchMedia('(hover: hover) and (pointer
 }
 
 const rings = document.querySelectorAll('.ring[data-progress]');
-if (rings.length && 'IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (!entry.isIntersecting) return;
-      observer.unobserve(entry.target);
-      animateRing(entry.target);
-    });
-  }, { threshold: 0.4 });
+if (animates) {
   rings.forEach((ring) => {
     ring.style.setProperty('--value', 0);
     ring.querySelector('span').textContent = '0%';
-    observer.observe(ring);
   });
+  onVisible(rings, animateRing);
 }
+
+const svgNS = 'http://www.w3.org/2000/svg';
+const svgElement = (name, attributes) => {
+  const element = document.createElementNS(svgNS, name);
+  Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, value));
+  return element;
+};
+const drawSparkline = (svg) => {
+  const rows = [...svg.closest('.card').querySelectorAll('[data-weight]')].reverse();
+  const values = rows.map((row) => Number(row.dataset.weight));
+  const width = svg.clientWidth;
+  const height = svg.clientHeight;
+  if (values.length < 2 || values.some(Number.isNaN) || !width) return;
+  const pad = 10;
+  const min = Math.min(...values);
+  const span = Math.max(...values) - min;
+  const points = values.map((value, index) => [
+    pad + (index * (width - 2 * pad)) / (values.length - 1),
+    span ? height - pad - ((value - min) * (height - 2 * pad)) / span : height / 2,
+  ]);
+  const line = points.map((point) => point.join(',')).join(' ');
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  svg.replaceChildren(
+    svgElement('polygon', { class: 'sparkline-area', points: `${pad},${height} ${line} ${width - pad},${height}` }),
+    svgElement('polyline', { class: 'sparkline-line', points: line, pathLength: 1 }),
+    ...points.map(([x, y], index) => {
+      const dot = svgElement('circle', { cx: x, cy: y, r: 4 });
+      const title = svgElement('title', {});
+      title.textContent = `${rows[index].dataset.date} · ${values[index]} kg`;
+      dot.append(title);
+      return dot;
+    }),
+  );
+};
+document.querySelectorAll('[data-sparkline]').forEach((svg) => {
+  drawSparkline(svg);
+  if ('ResizeObserver' in window) {
+    let width = svg.clientWidth;
+    new ResizeObserver(() => {
+      if (svg.clientWidth === width) return;
+      width = svg.clientWidth;
+      drawSparkline(svg);
+    }).observe(svg);
+  }
+});
 
 const reminder = document.querySelector('dialog[data-weigh-in-reminder]');
 if (reminder?.showModal) {

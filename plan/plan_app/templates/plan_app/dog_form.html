@@ -7,7 +7,7 @@
     <h1>{% if dog %}{% blocktranslate with name=dog.name|capfirst %}Edit {{ name }}{% endblocktranslate %}{% else %}{% translate "Add a dog" %}{% endif %}</h1>
     <p class="muted m-0">{% if dog %}{% translate "Update the profile details." %}{% else %}{% translate "You’ll set up the training plan next." %}{% endif %}</p>
   </div>
-  <form method="post" class="card form-stack">
+  <form method="post" class="card form-stack" data-guard>
     {% csrf_token %}
     {{ form }}
     <div class="form-actions">

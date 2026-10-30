@@ -98,6 +98,17 @@ main.container { padding: 1.5rem 0 3rem; }
 }
 .topbar-actions { display: flex; align-items: center; gap: .5rem; }
 .user-chip { display: inline-flex; align-items: center; gap: .5rem; color: var(--muted); font-size: .9rem; }
+.theme-toggle :is(.show-light, .show-dark) { display: grid; }
+[data-theme="dark"] .theme-toggle .show-light, :root:not([data-theme="dark"]) .theme-toggle .show-dark { display: none; }
+.theme-toggle.is-switching .icon { animation: icon-swap .5s var(--ease); }
+@keyframes icon-swap { from { opacity: 0; transform: rotate(-120deg) scale(.4); } }
+/* Theme switch: the new theme grows as a circle from the toggle button */
+:root.theme-reveal::view-transition-old(root) { animation: none; mix-blend-mode: normal; }
+:root.theme-reveal::view-transition-new(root) { animation: theme-reveal .55s var(--ease); mix-blend-mode: normal; }
+@keyframes theme-reveal {
+  from { clip-path: circle(0 at var(--reveal-x, 50%) var(--reveal-y, 0)); }
+  to { clip-path: circle(150vmax at var(--reveal-x, 50%) var(--reveal-y, 0)); }
+}
 
 /* ---------- Buttons ---------- */
 .btn {
@@ -327,6 +338,19 @@ main.container { padding: 1.5rem 0 3rem; }
 }
 .ring::before { content: ""; position: absolute; inset: 12px; border-radius: 50%; background: var(--surface); }
 .ring span { position: relative; font-size: 1.5rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.ring.is-complete { animation: ring-pulse 1.6s var(--ease) 3; }
+@keyframes ring-pulse {
+  50% { box-shadow: 0 0 0 10px color-mix(in srgb, var(--health) 16%, transparent), 0 0 36px -2px var(--health); }
+}
+
+/* Today card: the empty state fills the card instead of leaving a blank area */
+.today-card { display: flex; flex-direction: column; }
+.today-card .activity-list { flex: 1; }
+.empty.empty-inline {
+  display: grid; place-items: center; align-content: center; gap: .75rem; padding: 1.75rem 1rem;
+  border: 1px dashed var(--border); border-radius: var(--radius-sm); background: var(--surface-2);
+}
+.empty.empty-inline .brand-mark { margin: 0; width: 48px; height: 48px; border-radius: 15px; }
 
 /* ---------- Week grid ---------- */
 .week { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .75rem; }
@@ -403,7 +427,8 @@ a.day.act-rest:hover { box-shadow: 0 12px 30px -8px rgb(52 211 153 / .65), inset
 .badge-today { background: var(--primary-soft); color: var(--primary); border-color: transparent; }
 
 /* ---------- Stats ---------- */
-.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; }
+.stats-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .stat {
   position: relative; overflow: hidden; padding: 1rem 1.1rem; border-radius: 14px;
   background: var(--surface); border: 1px solid var(--border);
@@ -494,13 +519,22 @@ td input, td select { min-width: 120px; }
 /* ---------- Alerts ---------- */
 .toasts { position: fixed; z-index: 50; top: calc(var(--nav-h) + .75rem); right: 1rem; display: grid; gap: .5rem; width: min(380px, calc(100% - 2rem)); }
 .alert {
+  --alert: var(--primary);
+  position: relative; overflow: hidden;
   display: flex; align-items: flex-start; gap: .75rem; padding: .85rem 1rem; border-radius: 12px;
-  background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--primary);
+  background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--alert);
   box-shadow: var(--shadow); animation: toast-in .45s var(--ease) both;
 }
-.alert-success { border-left-color: var(--success); }
-.alert-error { border-left-color: var(--danger); }
-.alert-warning { border-left-color: var(--warning); }
+/* Countdown bar until auto-dismiss; pauses while hovered (app.js pauses the timer too) */
+.alert::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px;
+  background: var(--alert); opacity: .55; transform-origin: left;
+  animation: toast-timer 5s linear forwards;
+}
+.alert:hover::after { animation-play-state: paused; }
+.alert-success { --alert: var(--success); }
+.alert-error { --alert: var(--danger); }
+.alert-warning { --alert: var(--warning); }
 .alert p { margin: 0; flex: 1; }
 .alert button { border: 0; background: none; color: var(--muted); font-size: 1.2rem; line-height: 1; cursor: pointer; padding: 0; }
 .alert.is-leaving { animation: toast-out .35s var(--ease) forwards; }
@@ -574,6 +608,16 @@ td input, td select { min-width: 120px; }
 .empty { text-align: center; padding: 2.5rem 1rem; color: var(--muted); }
 .empty .brand-mark { margin: 0 auto 1rem; width: 56px; height: 56px; border-radius: 18px; }
 .pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 1.25rem; }
+
+/* Weight trend sparkline (drawn by app.js from the weight table) */
+.sparkline { display: block; width: 100%; height: 96px; margin-bottom: 1rem; overflow: visible; }
+.sparkline-area { fill: color-mix(in srgb, var(--accent) 14%, transparent); stroke: none; }
+.sparkline-line {
+  fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 1; stroke-dashoffset: 1; animation: line-draw 1.2s var(--ease) forwards;
+}
+.sparkline circle { fill: var(--surface); stroke: var(--accent); stroke-width: 2; transition: r .2s var(--ease); }
+.sparkline circle:hover { r: 6; fill: var(--accent); }
 .auth { min-height: calc(100vh - var(--nav-h) - 6rem); display: grid; place-items: center; }
 .auth .card { width: min(420px, 100%); box-shadow: var(--shadow); }
 
@@ -610,6 +654,8 @@ td input, td select { min-width: 120px; }
 @keyframes ripple { to { transform: scale(2.6); opacity: 0; } }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes bar-grow { from { transform: scaleX(0); } }
+@keyframes toast-timer { to { transform: scaleX(0); } }
+@keyframes line-draw { to { stroke-dashoffset: 0; } }
 /* Smooth cross-page transitions (Chrome, Edge, Safari 18+) */
 @view-transition { navigation: auto; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .2s; }
@@ -617,6 +663,8 @@ td input, td select { min-width: 120px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
   @view-transition { navigation: none; }
+  .alert::after { display: none; }
+  .sparkline-line { stroke-dasharray: none; }
 }
 
 /* ---------- Touch devices ---------- */
@@ -634,7 +682,6 @@ a, button, label, summary, select, input[type="radio"], input[type="checkbox"] {
 /* ---------- Responsive ---------- */
 @media (max-width: 1024px) {
   .week { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .grid-2, .plan-days { grid-template-columns: 1fr; }
 }
 
@@ -653,6 +700,7 @@ a, button, label, summary, select, input[type="radio"], input[type="checkbox"] {
   .btn-sm { min-height: 40px; }
 
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stats > :last-child:nth-child(odd) { grid-column: 1 / -1; }
 
   /* Week becomes a swipeable strip that snaps day by day */
   .week {

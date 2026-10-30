@@ -34,7 +34,7 @@
 {% include 'plan_app/dog_tabs.html' %}
 
 <div class="grid grid-2">
-  <section class="card">
+  <section class="card today-card">
     <div class="card-header">
       <h2>{% translate "Today’s training" %}</h2>
       <span class="muted">{{ today|date:"l, j F" }}</span>
@@ -43,10 +43,11 @@
       {% for a in today_entry.activities %}
         {% include 'plan_app/activity_row.html' with day=today %}
       {% empty %}
-        <p class="muted m-0">
-          {% translate "No training planned today." %}
-          {% if not plan and is_admin %}<a href="{% url 'plan_app:plan_edit' dog.pk %}">{% translate "Create a training plan" %}</a>.{% endif %}
-        </p>
+        <div class="empty empty-inline">
+          <span class="brand-mark">{% include 'plan_app/icon.html' with name='calendar' %}</span>
+          <p class="m-0">{% translate "No training planned today." %}</p>
+          {% if not plan and is_admin %}<a class="btn btn-sm" href="{% url 'plan_app:plan_edit' dog.pk %}">{% translate "Create a training plan" %}</a>{% endif %}
+        </div>
       {% endfor %}
     </div>
     <a class="add-link" href="{% url 'plan_app:session_record' dog.pk %}?date={{ today|date:'Y-m-d' }}&activity=extra">
@@ -154,7 +155,7 @@
       {% endfor %}
     </nav>
   </div>
-  <div class="stats">
+  <div class="stats stats-3">
     <div class="stat tone-primary"><span class="stat-value">{{ stats.training_days }}</span><span class="stat-label">{% translate "Training days" %}</span></div>
     <div class="stat"><span class="stat-value">{{ stats.rest_days }}</span><span class="stat-label">{% translate "Rest days" %}</span></div>
     <div class="stat tone-success"><span class="stat-value">{{ stats.completed }}</span><span class="stat-label">{% translate "Completed" %}</span></div>

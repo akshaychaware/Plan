@@ -26,7 +26,7 @@
 </nav>
 
 <div class="grid grid-2">
-  <form method="post" class="card" data-duration-scope>
+  <form method="post" class="card" data-duration-scope data-guard>
     {% csrf_token %}
     <div class="form-grid">{{ form }}</div>
     <div class="form-actions">
